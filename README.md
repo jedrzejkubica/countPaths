@@ -26,4 +26,4 @@ note: keep paths of length > the shortest path
 
 idea:
 
-start from a node, move to another node, count the number of neighbors excluding the previous node, repeat for all nodes until k==d or convergence (?)
+start from a node, move to another node, count the number of neighbors excluding the previous node, repeat for all nodes
