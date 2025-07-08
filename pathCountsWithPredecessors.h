@@ -8,13 +8,13 @@
 */
 
 /*
-    predecessorsMatrix
+    pathCounts
 */
 typedef struct {
     unsigned int 
 
-} predecessorsMatrix;
+} pathCounts;
 
-predecessorsMatrix *dense2predecessorsMatrix(denseAdjacency dense*);
+pathCounts *dense2pathCounts(denseAdjacency dense*);
 
 #endif
