@@ -28,6 +28,6 @@ typedef struct {
 compactAdjacencyMatrix *adjacency2compact(adjacencyMatrix *A);
 // get rid of any isolated nodes? removeLoops is enough?
 
-freecompactAdjacency(compactAdjacencyMatrix *compactA);
+void freeCompactAdjacency(compactAdjacencyMatrix *compactA);
 
 #endif

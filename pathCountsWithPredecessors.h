@@ -4,39 +4,50 @@
 #include "compactAdjacency.h"
 
 /*
-    this module defines the matrix with path counts for predecessors
+    this module defines the matrix of path counts with predecessors
 */
 
 /*
-    pathCounts[p] = number of paths 
+    pathCountsWithPred is of size offsets[nbNodes] x nbNodes,
+    pathCountsWithPred[i*offsets[nbNodes] + j] corresponds to the number of paths
+    between nodes i and j with penultimate node p;
 */
 typedef struct {
-    unsigned int nbRows;
-    unsigned int *pathCounts;
+    unsigned int nbNodes;
+    unsigned int *pathCountsWithPred;
+} pathCountsWithPredMatrix;
+
+/*
+    initialize pathCountsWithPredMatrix;
     
-} pathCountsMatrix;
+    pathCountsWithPred[i*offsets[nbNodes] + j] = 1 if:
+    - node i is a predecessor of node j
+    - node p is a predecessor of node i
+    or skip otherwise?
+*/
+void compact2pathCountsWithPred(
+    pathCountsWithPredMatrix *pathCountsWithPred, 
+    unsigned int *offsets,
+    unsigned int *predecessors,
+    float *weights
+);
 
 /*
-    initialize pathCountsMatrix
+    idx = i * offsets[nbNodes]
+    sum = 0
+    for (offset = offsets[p]; offset < offsets[p+1]; offset++) {
+        if (predecessors[offset] != j) {
+            sum += pathCountsWithPred[idx + offset];
+        }
+    }
 */
-void initializePathCounts(pathCountsMatrix *pathCounts);
+pathCountsWithPredMatrix *updatePathCountsWithPred(
+    pathCountsWithPredMatrix *pathCountsWithPred, 
+    unsigned int *offsets,
+    unsigned int *predecessors,
+    float *weights
+);
 
-
-/*
-    get sum_p'_not_j(B_k[i, j][p'])
-    [33, 17, 20, 55, ...]
-    degreesSum[i] == sum of degrees of node i
-*/
-unsigned int *degreesSum(denseAdjacencyMatrix *denseAdjacency);
-
-/*
-    get A[p, j]
-*/
-float *getWeight(float *weights, unsigned int p, unsigned int j);
-
-/*
-    recursively update path counts
-*/
-void updatePathCounts(unsigned int *degreesSum, float *getWeight(float *weights));
+void freePathCountsWithPred(pathCountsWithPredMatrix *pathCountsWithPred);
 
 #endif
