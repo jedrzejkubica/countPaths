@@ -20,17 +20,12 @@ typedef struct {
 /*
     initialize pathCountsWithPredMatrix;
     
-    pathCountsWithPred[i*offsets[nbNodes] + j] = 1 if:
+    pathCountsWithPred[i*offsets[nbNodes] + j] = weights[offsets[j]] if:
     - node i is a predecessor of node j
     - node p is a predecessor of node i
     or skip otherwise?
 */
-void compact2pathCountsWithPred(
-    pathCountsWithPredMatrix *pathCountsWithPred, 
-    unsigned int *offsets,
-    unsigned int *predecessors,
-    float *weights
-);
+pathCountsWithPredMatrix *compact2pathCountsWithPred(unsigned int *offsets, unsigned int *predecessors, float *weights);
 
 /*
     idx = i * offsets[nbNodes]
