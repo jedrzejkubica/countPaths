@@ -8,41 +8,37 @@
 */
 
 /*
-    pathCountsWithPred is of size offsets[nbNodes] x nbNodes,
-    pathCountsWithPred[i*offsets[nbNodes] + j] corresponds to the number of paths
-    between nodes i and j with penultimate node p;
+    this structure is dependent on a compactAdjacencyMatrix;
+
+    data is of size offsets[nbNodes]*nbNodes;
+
+    for any k in [0, deg(j)-1]:
+    data[i*offsets[nbNodes] + offsets[j] + k]
+    is the number of paths (or the sum of path weights for a weighted network)
+    between nodes i and j whose penultimate node is predecessors[offsets[j] + k]
 */
 typedef struct {
-    unsigned int nbNodes;
-    unsigned int *pathCountsWithPred;
+    float *data;
 } pathCountsWithPredMatrix;
 
 /*
-    initialize pathCountsWithPredMatrix;
+    build pathCountsWithPredMatrix for paths of length 1,
+    return a pointer to a freshly allocated structure;
     
-    pathCountsWithPred[i*offsets[nbNodes] + j] = weights[offsets[j]] if:
+    data[i*offsets[nbNodes] + offsets[j] + k] = weights[offsets[j] + k] if:
     - node i is a predecessor of node j
-    - node p is a predecessor of node i
-    or skip otherwise?
+    - predecessors[offsets[j] + k] == i
+    or 0 otherwise
 */
-pathCountsWithPredMatrix *compact2pathCountsWithPred(unsigned int *offsets, unsigned int *predecessors, float *weights);
+pathCountsWithPredMatrix *compact2pathCounts(compactAdjacencyMatrix *compact);
 
 /*
-    idx = i * offsets[nbNodes]
-    sum = 0
-    for (offset = offsets[p]; offset < offsets[p+1]; offset++) {
-        if (predecessors[offset] != j) {
-            sum += pathCountsWithPred[idx + offset];
-        }
-    }
+    build a pathCountsWithPredMatrix for paths of length k+1
+    given pathCountsWithPredMatrix for paths of length k,
+    return a pointer to a freshly allocated structure;
 */
-pathCountsWithPredMatrix *updatePathCountsWithPred(
-    pathCountsWithPredMatrix *pathCountsWithPred, 
-    unsigned int *offsets,
-    unsigned int *predecessors,
-    float *weights
-);
+pathCountsWithPredMatrix *buildNextPathCounts(pathCountsWithPredMatrix *pathCounts, compactAdjacencyMatrix *compact);
 
-void freePathCountsWithPred(pathCountsWithPredMatrix *pathCountsWithPred);
+void freePathCountsWithPred(pathCountsWithPredMatrix *pathCounts);
 
 #endif

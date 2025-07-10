@@ -5,14 +5,13 @@
     this module defines data structure and methods for adjacency matrix calculations
 */
 
-
 /*
-    elements[i*nbCols + j] contains the weight from node i to node j
+    weights[i*nbCols + j] contains the weight from node i to node j
     note: weights must be 0/1 for unweighted, or in [0, 1] for weighted
 */
 typedef struct {
     unsigned int nbCols;
-    float *elements;
+    float *weights;
 } adjacencyMatrix;
 
 /*

@@ -1,16 +1,22 @@
+#ifndef _PATHCOUNTS_H_
+#define _PATHCOUNTS_H_
+
 #include "pathCountsWithPredecessors.h"
 
 /*
-    the same structure as adjacency.h;
-
-    elements[i*nbCols + j] contains the number of paths from node i to node j
+    pathCounts[i*nbCols + j] contains the number of paths for some length
+    (or the sum of path weights for a weighted network) between nodes i and j
 */
 typedef struct {
     unsigned int nbCols;
-    float *elements;
-} pathCountMatrix;
+    float *pathCounts;
+} pathCountsMatrix;
 
 /*
     sum of pathCountsWithPred[] from to is the number of paths between nodes i and j
 */
-pathCountMatrix *countPaths(pathCountsWithPredMatrix *pathCountsWithPred);
+pathCountsMatrix *countPaths(pathCountsWithPredMatrix *pathCountsWithPred, compactAdjacencyMatrix *compact);
+
+freePathCounts();
+
+#endif
