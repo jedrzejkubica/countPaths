@@ -24,11 +24,6 @@ typedef struct {
 /*
     build pathCountsWithPredMatrix for paths of length 1,
     return a pointer to a freshly allocated structure;
-    
-    data[i*offsets[nbNodes] + offsets[j] + k] = weights[offsets[j] + k] if:
-    - node i is a predecessor of node j
-    - predecessors[offsets[j] + k] == i
-    or 0 otherwise
 */
 pathCountsWithPredMatrix *compact2pathCounts(compactAdjacencyMatrix *compact);
 
