@@ -19,14 +19,11 @@
     the corresponding edge weights (coming into node j) are weights[offsets[j]] up to weights[offsets[j+1]-1]
 */
 typedef struct {
-    unsigned int nbNodes;  // 8 bytes
-    unsigned int *offsets;  // 8 bytes
-    unsigned int *predecessors;  // 8 bytes
-    float *weights;  // 8 bytes
+    unsigned int nbNodes;
+    unsigned int *offsets;
+    unsigned int *predecessors;
+    float *weights;
 } compactAdjacencyMatrix;
-// A = malloc(sizeof(compactAdjacencyMatrix)) --> 32 bytes
-// A->nbNodes = 7
-// A->offsets = malloc(sizeof(unsigned int) * sumDegrees)
 
 compactAdjacencyMatrix *adjacency2compact(adjacencyMatrix *A);
 

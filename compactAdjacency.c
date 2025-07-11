@@ -3,44 +3,43 @@
 #include "mem.h"
 
 compactAdjacencyMatrix *adjacency2compact(adjacencyMatrix *A) {
-    compactAdjacencyMatrix *compact = mallocOrDie(sizeof(compactAdjacencyMatrix), "E: OOM for cost\n");
+    compactAdjacencyMatrix *compact = mallocOrDie(sizeof(compactAdjacencyMatrix), "E: OOM for compact\n");
 
     compact->nbNodes = A->nbCols;
-    compact->offsets = mallocOrDie(sizeof(unsigned int) * (A->nbCols + 1), "E: OOM for cost\n");
-    compact->predecessors = mallocOrDie(sizeof(unsigned int) * sumDegrees, "E: OOM for cost\n");
-    compact->weights = mallocOrDie(sizeof(float) * sumDegrees, "E: OOM for cost\n");
+    compact->offsets = mallocOrDie(sizeof(unsigned int) * (A->nbCols + 1), "E: OOM for offsets\n");
     
-    unsigned int sumDegrees = 0;
     compact->offsets[0] = 0;
-    unsigned int idxOffsets = 1;
-    unsigned int idxPred = 0;
-    
-    for (unsigned int i = 0; i < A->nbCols; i++) {
-        unsigned int degree = 0;
-        for (unsigned int j = 0; j < A->nbCols; j++) {
+    unsigned int sumInDegrees = 0;
+    for (unsigned int j = 0; j < A->nbCols; j++) {
+        // in-degree of node j
+        unsigned int inDegree = 0;
+        for (unsigned int i = 0; i < A->nbCols; i++) {
             if (A->weights[i * A->nbCols + j] > 0) {
-                degree++;
+                inDegree++;
+            }
+        }
+        sumInDegrees += inDegree;
+        compact->offsets[j+1] = sumInDegrees;
+    }
 
-                compact->predecessors[idxPred] = j;
+    compact->predecessors = mallocOrDie(sizeof(unsigned int) * sumInDegrees, "E: OOM for predecessors\n");
+    compact->weights = mallocOrDie(sizeof(float) * sumInDegrees, "E: OOM for weights in compact\n");
+
+    unsigned int idxPred = 0;
+    for (unsigned int j = 0; j < A->nbCols; j++) {
+        for (unsigned int i = 0; i < A->nbCols; i++) {
+            if (A->weights[i * A->nbCols + j] > 0) {
+                compact->predecessors[idxPred] = i;
                 compact->weights[idxPred] = A->weights[i * A->nbCols + j];
                 idxPred++;
             }
         }
-        sumDegrees += degree;
-        compact->offsets[idxOffsets] = sumDegrees;
-        idxOffsets++;
     }
-    
-    free(idxOffsets);
-    free(idxPred);
-    free(sumDegrees);
-    free(degree);
 
     return compact;
 }
 
 void freeCompactAdjacency(compactAdjacencyMatrix *compact) {
-    free(compact->nbNodes);  // necessary?
     free(compact->offsets);
     free(compact->predecessors);
     free(compact->weights);

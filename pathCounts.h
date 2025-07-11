@@ -12,11 +12,14 @@ typedef struct {
     float *pathCounts;
 } pathCountsMatrix;
 
-/*
-    sum of pathCountsWithPred[] from to is the number of paths between nodes i and j
+/*  
+    sum = 0;
+    for (unsigned int k = compact->offsets[j]; k < compact->offsets[j + 1]; k++)
+        sum += pathCountsWithPred->data[i*offsets[nbNodes] + k]
+    pathCounts[i*nbCols + j] = sum;
 */
 pathCountsMatrix *countPaths(pathCountsWithPredMatrix *pathCountsWithPred, compactAdjacencyMatrix *compact);
 
-freePathCounts();
+void freePathCounts(pathCountsMatrix *countPaths);
 
 #endif

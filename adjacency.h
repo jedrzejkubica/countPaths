@@ -22,7 +22,7 @@ void removeLoops(adjacencyMatrix *A);
 
 /*
     parse a SIF file with the network,
-    each line must be: node1, "pp", node2
+    each line must be: node1, weight, node2
 */
 adjacencyMatrix *readSIF(char *fileName);
 

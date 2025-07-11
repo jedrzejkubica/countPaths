@@ -6,5 +6,4 @@
 /* allocate memory, or print errMess and die if malloc fails */
 void *mallocOrDie(size_t size, char *errMess) ;
 
-
 #endif
