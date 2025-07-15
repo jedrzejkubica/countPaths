@@ -25,8 +25,8 @@ pathCountsWithPredMatrix *compact2pathCounts(compactAdjacencyMatrix *compact) {
 
     // if i->j is an edge of weight w, then there is a path from i to j
     // with penultimate node i and weight w
-    for (size_t idxOffset = 0; idxOffset < sumDegrees; idxOffset++)
-	pathCounts->data[compact->predecessors[idxOffset] * sumDegrees + idxOffset] = compact->weights[idxOffset];
+    for (size_t offset = 0; offset < sumDegrees; offset++)
+	pathCounts->data[compact->predecessors[offset] * sumDegrees + offset] = compact->weights[offset];
     return pathCounts;
 }
 
