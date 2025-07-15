@@ -4,11 +4,18 @@ CC = gcc
 
 
 ## all objects to make
-OBJS = $(patsubst %.c,%.o,$(wildcard *.c))
+OBJS = $(patsubst %.h,%.o,$(wildcard *.h))
 
 # no main() yet but we want to compile each source
 
-all: $(OBJS)
+all: testAdjacency countPaths
+
+
+testAdjacency: testAdjacency.o $(OBJS)
+	$(CC) $(LDFLAGS) -o $@ $^
+
+countPaths: countPaths.o $(OBJS)
+	$(CC) $(LDFLAGS) -o $@ $^
 
 
 # aliDnaLinear: aliDnaLinear.o $(OBJCOMMON) $(OBJSW)
