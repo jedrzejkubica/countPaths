@@ -12,7 +12,7 @@
     - predecessors[offsets[j] + k] == i
     or 0 otherwise
 */
-pathCountsWithPredMatrix *compact2pathCounts(compactAdjacencyMatrix *compact) {
+pathCountsWithPredMatrix *buildFirstPathCounts(compactAdjacencyMatrix *compact) {
     pathCountsWithPredMatrix *pathCounts = mallocOrDie(sizeof(pathCountsWithPredMatrix), "E: OOM for path counts\n");
     
     unsigned int nbNodes = compact->nbNodes;

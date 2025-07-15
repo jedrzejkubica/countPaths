@@ -25,7 +25,7 @@ typedef struct {
     build pathCountsWithPredMatrix for paths of length 1,
     return a pointer to a freshly allocated structure;
 */
-pathCountsWithPredMatrix *compact2pathCounts(compactAdjacencyMatrix *compact);
+pathCountsWithPredMatrix *buildFirstPathCounts(compactAdjacencyMatrix *compact);
 
 /*
     build a pathCountsWithPredMatrix for paths of length k+1
