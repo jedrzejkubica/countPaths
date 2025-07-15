@@ -15,15 +15,19 @@
     offsets[j] is the first index corresponding to node j in predecessors and weights,
     offsets[nbNodes] is the sum of degrees, used to avoid overflowing;
 
-    nodes with an edge going into node j are nodes predecessors[offsets[j]] up to predecessors[offsets[j+1]-1];
+    nodes with an edge incoming to j are nodes predecessors[offsets[j]] up to predecessors[offsets[j+1]-1];
+    the corresponding edge weights (incoming to j) are weights[offsets[j]] up to weights[offsets[j+1]-1]
 
-    the corresponding edge weights (coming into node j) are weights[offsets[j]] up to weights[offsets[j+1]-1]
+    Similarly nodes with an edge outgoing from j are nodes successors[offsetsSuccessors[j]] up
+    to successors[offsetsSuccessors[j+1]-1] (we don't store the weights in this direction)
 */
 typedef struct {
     unsigned int nbNodes;
     size_t *offsets;
     unsigned int *predecessors;
     float *weights;
+    size_t *offsetsSuccessors;
+    unsigned int *successors;
 } compactAdjacencyMatrix;
 
 compactAdjacencyMatrix *adjacency2compact(adjacencyMatrix *A);
