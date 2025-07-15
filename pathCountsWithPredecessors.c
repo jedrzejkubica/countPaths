@@ -22,11 +22,11 @@ pathCountsWithPredMatrix *compact2pathCounts(compactAdjacencyMatrix *compact) {
     // set to 0.0 float (all-zeroes is not guaranteed to be 0.0)
     for (size_t i = 0; i < sumDegrees * nbNodes; i++)
         pathCounts->data[i] = 0.0;
-    
-    for (unsigned int j = 0; j < nbNodes; j++)
-        for (unsigned int k = compact->offsets[j]; k < compact->offsets[j + 1]; k++)
-            pathCounts->data[compact->predecessors[k] * sumDegrees + k] = compact->weights[k];
-    
+
+    // if i->j is an edge of weight w, then there is a path from i to j
+    // with penultimate node i and weight w
+    for (size_t idxOffset = 0; idxOffset < sumDegrees; idxOffset++)
+	pathCounts->data[compact->predecessors[idxOffset] * sumDegrees + idxOffset] = compact->weights[idxOffset];
     return pathCounts;
 }
 
