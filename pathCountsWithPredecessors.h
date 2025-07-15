@@ -32,7 +32,8 @@ pathCountsWithPredMatrix *compact2pathCounts(compactAdjacencyMatrix *compact);
     given pathCountsWithPredMatrix for paths of length k,
     return a pointer to a freshly allocated structure;
 */
-pathCountsWithPredMatrix *buildNextPathCounts(pathCountsWithPredMatrix *pathCounts, compactAdjacencyMatrix *compact);
+pathCountsWithPredMatrix *buildNextPathCounts(pathCountsWithPredMatrix *pathCounts,
+					      compactAdjacencyMatrix *compact);
 
 void freePathCountsWithPred(pathCountsWithPredMatrix *pathCounts);
 
