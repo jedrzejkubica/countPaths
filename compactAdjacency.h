@@ -1,6 +1,7 @@
 #ifndef _COMPACTADJACENCY_H_
 #define _COMPACTADJACENCY_H_
 
+#include <stddef.h>
 #include "adjacency.h"
 
 /*
@@ -20,7 +21,7 @@
 */
 typedef struct {
     unsigned int nbNodes;
-    unsigned int *offsets;
+    size_t *offsets;
     unsigned int *predecessors;
     float *weights;
 } compactAdjacencyMatrix;
