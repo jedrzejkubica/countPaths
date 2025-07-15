@@ -25,7 +25,7 @@ pathCountsWithPredMatrix *compact2pathCounts(compactAdjacencyMatrix *compact) {
     
     for (unsigned int j = 0; j < nbNodes; j++)
         for (unsigned int k = compact->offsets[j]; k < compact->offsets[j + 1]; k++)
-            pathCounts->data[predecessors[k] * sumDegrees + k] = compact->weights[k];
+            pathCounts->data[compact->predecessors[k] * sumDegrees + k] = compact->weights[k];
     
     return pathCounts;
 }
