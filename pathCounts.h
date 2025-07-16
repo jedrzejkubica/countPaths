@@ -4,12 +4,12 @@
 #include "pathCountsWithPredecessors.h"
 
 /*
-    pathCounts[i*nbCols + j] contains the number of paths for some length
+    data[i*nbCols + j] contains the number of paths for some length
     (or the sum of path weights for a weighted network) between nodes i and j
 */
 typedef struct {
     unsigned int nbCols;
-    float *pathCounts;
+    float *data;
 } pathCountsMatrix;
 
 /*  
@@ -20,6 +20,8 @@ typedef struct {
 */
 pathCountsMatrix *countPaths(pathCountsWithPredMatrix *pathCountsWithPred, compactAdjacencyMatrix *compact);
 
-void freePathCounts(pathCountsMatrix *countPaths);
+void printPathCounts(pathCountsMatrix *pathCounts);
+
+void freePathCounts(pathCountsMatrix *pathCounts);
 
 #endif
