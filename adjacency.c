@@ -5,7 +5,7 @@
 #include "mem.h"
 
 void removeLoops(adjacencyMatrix *A) {
-    for (unsigned int i = 0; i < A->nbCols; i++) {
+    for (size_t i = 0; i < A->nbCols; i++) {
             A->weights[i * A->nbCols + i] = 0;
     }
 }
@@ -93,8 +93,8 @@ void freeAdjacency(adjacencyMatrix *A) {
 }
 
 void printAdjacency(adjacencyMatrix *A) {
-    for (unsigned int i = 0; i < A->nbCols; i++) {
-        for (unsigned int j = 0; j < A->nbCols; j++) {
+    for (size_t i = 0; i < A->nbCols; i++) {
+        for (size_t j = 0; j < A->nbCols; j++) {
             printf("%0.2f ", A->weights[i * A->nbCols + j]);
         }
         printf("\n");

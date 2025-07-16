@@ -42,23 +42,23 @@ pathCountsWithPredMatrix *buildNextPathCounts(pathCountsWithPredMatrix *pathCoun
     pathCountsWithPredMatrix *nextPathCounts = mallocOrDie(sizeof(pathCountsWithPredMatrix), "E: OOM for next path counts\n");
     nextPathCounts->data = mallocOrDie(sizeof(float) * sumDegrees * nbNodes, "E: OOM for next path counts data\n");
     
-    for (unsigned int i = 0; i < nbNodes; i++) {
-        for (unsigned int j = 0; j < nbNodes; j++) {
+    for (size_t i = 0; i < nbNodes; i++) {
+        for (size_t j = 0; j < nbNodes; j++) {
             for (size_t offset = compact->offsets[j]; offset < compact->offsets[j + 1]; offset++) {
-		unsigned int p = compact->predecessors[offset];
-		/* calculate the sum of path weights from i to j with penultimate node p
-		   => we need to sum the paths from i to p but skip the one whose penultimate
-		   node was j */
-		float sum = 0;
-		for (size_t offsetPredOfP = compact->offsets[p]; offsetPredOfP < compact->offsets[p+1]; offsetPredOfP++) {
-		    // skip if current predecessor of p is j
-		    if (compact->predecessors[offsetPredOfP] != j)
-			sum += pathCounts->data[i * sumDegrees + offsetPredOfP];
+                unsigned int p = compact->predecessors[offset];
+                /* calculate the sum of path weights from i to j with penultimate node p
+                => we need to sum the paths from i to p but skip the one whose penultimate
+                node was j */
+                float sum = 0;
+                for (size_t offsetPredOfP = compact->offsets[p]; offsetPredOfP < compact->offsets[p+1]; offsetPredOfP++) {
+                    // skip if current predecessor of p is j
+                    if (compact->predecessors[offsetPredOfP] != j)
+                    sum += pathCounts->data[i * sumDegrees + offsetPredOfP];
                 }
-		sum *= compact->weights[offset];
-		nextPathCounts->data[i * sumDegrees + offset] = sum;
-	    }
-	}
+                sum *= compact->weights[offset];
+                nextPathCounts->data[i * sumDegrees + offset] = sum;
+            }
+        }
     }
     
     return nextPathCounts;

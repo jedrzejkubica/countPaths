@@ -10,10 +10,10 @@ compactAdjacencyMatrix *adjacency2compact(adjacencyMatrix *A) {
     
     compact->offsets[0] = 0;
     size_t sumInDegrees = 0;
-    for (unsigned int j = 0; j < A->nbCols; j++) {
+    for (size_t j = 0; j < A->nbCols; j++) {
         // in-degree of node j
         size_t inDegree = 0;
-        for (unsigned int i = 0; i < A->nbCols; i++) {
+        for (size_t i = 0; i < A->nbCols; i++) {
             if (A->weights[i * A->nbCols + j] > 0) {
                 inDegree++;
             }
@@ -26,8 +26,8 @@ compactAdjacencyMatrix *adjacency2compact(adjacencyMatrix *A) {
     compact->weights = mallocOrDie(sizeof(float) * sumInDegrees, "E: OOM for weights in compact\n");
 
     size_t idxPred = 0;
-    for (unsigned int j = 0; j < A->nbCols; j++) {
-        for (unsigned int i = 0; i < A->nbCols; i++) {
+    for (size_t j = 0; j < A->nbCols; j++) {
+        for (size_t i = 0; i < A->nbCols; i++) {
             if (A->weights[i * A->nbCols + j] > 0) {
                 compact->predecessors[idxPred] = i;
                 compact->weights[idxPred] = A->weights[i * A->nbCols + j];
