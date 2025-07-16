@@ -3,6 +3,7 @@
 #include "adjacency.h"
 #include "compactAdjacency.h"
 #include "pathCountsWithPredecessors.h"
+#include "pathCounts.h"
 #include "mem.h"
 
 
@@ -29,19 +30,39 @@ int main(void) {
     adjacencyMatrix *diam4 = diamond4();
     printf("diam4 with its self-loop\n");
     printAdjacency(diam4);
+    
     removeLoops(diam4);
     printf("diam4 without self-loops\n");
     printAdjacency(diam4);
 
     compactAdjacencyMatrix *diam4comp = adjacency2compact(diam4);
 
-    pathCountsWithPredMatrix *diam4PathCountsD1 = buildFirstPathCounts(diam4comp);
-    pathCountsWithPredMatrix *diam4PathCountsD2 = buildNextPathCounts(diam4PathCountsD1, diam4comp);
-    freePathCountsWithPred(diam4PathCountsD1);
-    freePathCountsWithPred(diam4PathCountsD2);
+    pathCountsWithPredMatrix *diam4PathCountsWithPredD1 = buildFirstPathCounts(diam4comp);
+    pathCountsWithPredMatrix *diam4PathCountsWithPredD2 = buildNextPathCounts(diam4PathCountsWithPredD1, diam4comp);
 
+    pathCountsMatrix *diam4PathCounts = countPaths(diam4PathCountsWithPredD2, diam4comp);
+    printf("diam4 path counts\n");
+    printPathCounts(diam4PathCounts);
+
+    freePathCounts(diam4PathCounts);
+    freePathCountsWithPred(diam4PathCountsWithPredD2);
+    freePathCountsWithPred(diam4PathCountsWithPredD1);
     freeCompactAdjacency(diam4comp);
     freeAdjacency(diam4);
+    
     return(0);
+
+    // unsigned int maxDistance = 4;
+
+    // for (size_t i = 0; i < maxDistance; i++) {
+    //     pathCountsWithPredMatrix *diam4Next = buildNextPathCounts(diam4PathCountsWithPred, diam4comp);
+    //     freePathCountsWithPred(diam4PathCountsWithPred);
+    //     pathCountsWithPredMatrix *diam4PathCountsWithPred = diam4Next;
+    //     freePathCountsWithPred(diam4Next);
+    // }
+    
+    // pathCountsMatrix *diam4PathCounts = countPaths(diam4PathCountsWithPred, diam4comp);
+    // printf("diam4 path counts\n");
+    // printPathCounts(diam4PathCounts);
 }
 
