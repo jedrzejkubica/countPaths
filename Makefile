@@ -1,31 +1,36 @@
 LDFLAGS = -lm
-CFLAGS = -g -Wall -Wextra -std=c99
+CFLAGS = -g -Wall -Wextra -std=c17
 CC = gcc
 
+OBJDIR = Objs
+DEPDIR = Deps
 
 ## all objects to make
-OBJS = $(patsubst %.h,%.o,$(wildcard *.h))
+OBJS = $(patsubst %.h,$(OBJDIR)/%.o,$(wildcard *.h))
 
-# no main() yet but we want to compile each source
+# binaries
+all: mkdirs testAdjacency countPaths
 
-all: testAdjacency countPaths
 
-
-testAdjacency: testAdjacency.o $(OBJS)
+testAdjacency: $(OBJDIR)/testAdjacency.o $(OBJS)
 	$(CC) $(LDFLAGS) -o $@ $^
 
-countPaths: countPaths.o $(OBJS)
+countPaths: $(OBJDIR)/countPaths.o $(OBJS)
 	$(CC) $(LDFLAGS) -o $@ $^
 
+# make subdirs if they don't exist yet
+mkdirs:
+	mkdir -p $(OBJDIR) $(DEPDIR)
 
-# aliDnaLinear: aliDnaLinear.o $(OBJCOMMON) $(OBJSW)
-#	$(CC) $(LDFLAGS) -o $@ $^
-
-%.o: %.c
-	$(CC) $(CFLAGS) -MMD -c -o $@ $<
+# making each object file
+$(OBJDIR)/%.o: %.c Makefile
+	$(CC) $(CFLAGS) -MMD -MF $(DEPDIR)/$*.d -c -o $@ $<
 
 # deps made thanks to -MMD above, just include them
--include $(patsubst %.c,%.d,$(wildcard *.c))
+-include $(patsubst %.c,$(DEPDIR)/%.d,$(wildcard *.c))
+
 
 clean:
-	rm -f *.o *.d *~
+	rm -f $(OBJDIR)/*.o $(DEPDIR)/*.d *~
+
+.PHONY: mkdirs all clean
