@@ -3,15 +3,7 @@
 #include "adjacency.h"
 #include "mem.h"
 
-/*
-    build pathCountsWithPredMatrix for paths of length 1,
-    return a pointer to a freshly allocated structure;
     
-    data[i*offsets[nbNodes] + offsets[j] + k] = weights[offsets[j] + k] if:
-    - node i is a predecessor of node j
-    - predecessors[offsets[j] + k] == i
-    or 0 otherwise
-*/
 pathCountsWithPredMatrix *buildFirstPathCounts(compactAdjacencyMatrix *compact) {
     pathCountsWithPredMatrix *pathCounts = mallocOrDie(sizeof(pathCountsWithPredMatrix), "E: OOM for path counts\n");
     
@@ -27,14 +19,10 @@ pathCountsWithPredMatrix *buildFirstPathCounts(compactAdjacencyMatrix *compact) 
     // with penultimate node i and weight w
     for (size_t offset = 0; offset < sumDegrees; offset++)
 	pathCounts->data[compact->predecessors[offset] * sumDegrees + offset] = compact->weights[offset];
+
     return pathCounts;
 }
 
-/*
-    build a pathCountsWithPredMatrix for paths of length k+1
-    given pathCountsWithPredMatrix for paths of length k,
-    return a pointer to a freshly allocated structure;
-*/
 pathCountsWithPredMatrix *buildNextPathCounts(pathCountsWithPredMatrix *pathCounts, compactAdjacencyMatrix *compact) {
     unsigned int nbNodes = compact->nbNodes;
     unsigned int sumDegrees = compact->offsets[nbNodes];
