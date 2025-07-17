@@ -37,38 +37,28 @@ int main(void) {
 
     compactAdjacencyMatrix *diam4comp = adjacency2compact(diam4);
 
-    pathCountsWithPredMatrix *diam4PathCountsWithPredD1 = buildFirstPathCounts(diam4comp);
-    pathCountsWithPredMatrix *diam4PathCountsWithPredD2 = buildNextPathCounts(diam4PathCountsWithPredD1, diam4comp);
-    pathCountsWithPredMatrix *diam4PathCountsWithPredD3 = buildNextPathCounts(diam4PathCountsWithPredD2, diam4comp);
-    pathCountsWithPredMatrix *diam4PathCountsWithPredD4 = buildNextPathCounts(diam4PathCountsWithPredD3, diam4comp);
-    pathCountsWithPredMatrix *diam4PathCountsWithPredD5 = buildNextPathCounts(diam4PathCountsWithPredD4, diam4comp);
+    unsigned int maxDistance = 5;
 
-    pathCountsMatrix *diam4PathCounts = countPaths(diam4PathCountsWithPredD5, diam4comp);
-    printf("diam4 path counts d=5\n");
-    printPathCounts(diam4PathCounts);
+    pathCountsWithPredMatrix *diam4PathCountsWithPred = buildFirstPathCounts(diam4comp);
 
-    freePathCounts(diam4PathCounts);
-    freePathCountsWithPred(diam4PathCountsWithPredD5);
-    freePathCountsWithPred(diam4PathCountsWithPredD4);
-    freePathCountsWithPred(diam4PathCountsWithPredD3);
-    freePathCountsWithPred(diam4PathCountsWithPredD2);
-    freePathCountsWithPred(diam4PathCountsWithPredD1);
+    pathCountsWithPredMatrix *diam4Next = NULL;
+
+    for (size_t i = 1; i < maxDistance; i++) {
+        diam4Next = buildNextPathCounts(diam4PathCountsWithPred, diam4comp);
+        
+        pathCountsMatrix *diam4PathCounts = countPaths(diam4Next, diam4comp);
+        printf("diam4 path counts D=%lu\n", i+1);
+        printPathCounts(diam4PathCounts);
+        freePathCounts(diam4PathCounts);
+
+        freePathCountsWithPred(diam4PathCountsWithPred);
+        diam4PathCountsWithPred = diam4Next;
+    }
+
+    freePathCountsWithPred(diam4Next);
     freeCompactAdjacency(diam4comp);
     freeAdjacency(diam4);
 
     return(0);
-
-    // unsigned int maxDistance = 4;
-
-    // for (size_t i = 0; i < maxDistance; i++) {
-    //     pathCountsWithPredMatrix *diam4Next = buildNextPathCounts(diam4PathCountsWithPred, diam4comp);
-    //     freePathCountsWithPred(diam4PathCountsWithPred);
-    //     pathCountsWithPredMatrix *diam4PathCountsWithPred = diam4Next;
-    //     freePathCountsWithPred(diam4Next);
-    // }
-    
-    // pathCountsMatrix *diam4PathCounts = countPaths(diam4PathCountsWithPred, diam4comp);
-    // printf("diam4 path counts\n");
-    // printPathCounts(diam4PathCounts);
 }
 
