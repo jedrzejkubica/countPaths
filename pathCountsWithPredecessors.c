@@ -3,7 +3,7 @@
 #include "adjacency.h"
 #include "mem.h"
 
-    
+
 pathCountsWithPredMatrix *buildFirstPathCounts(compactAdjacencyMatrix *compact) {
     pathCountsWithPredMatrix *pathCounts = mallocOrDie(sizeof(pathCountsWithPredMatrix), "E: OOM for path counts\n");
     
@@ -18,7 +18,7 @@ pathCountsWithPredMatrix *buildFirstPathCounts(compactAdjacencyMatrix *compact) 
     // if i->j is an edge of weight w, then there is a path from i to j
     // with penultimate node i and weight w
     for (size_t offset = 0; offset < sumDegrees; offset++)
-	pathCounts->data[compact->predecessors[offset] * sumDegrees + offset] = compact->weights[offset];
+	    pathCounts->data[compact->predecessors[offset] * sumDegrees + offset] = compact->weights[offset];
 
     return pathCounts;
 }
@@ -36,16 +36,16 @@ pathCountsWithPredMatrix *buildNextPathCounts(pathCountsWithPredMatrix *pathCoun
                 float sum = 0;
                 // we want to ignore loops so path count is zero if i==j
                 if (i != j) {
-                unsigned int p = compact->predecessors[offset];
-                /* calculate the sum of path weights from i to j with penultimate node p
-                => we need to sum the paths from i to p but skip the one whose penultimate
-                node was j */
-                for (size_t offsetPredOfP = compact->offsets[p]; offsetPredOfP < compact->offsets[p+1]; offsetPredOfP++) {
-                    // skip if current predecessor of p is j
-                    if (compact->predecessors[offsetPredOfP] != j)
-                    sum += pathCounts->data[i * sumDegrees + offsetPredOfP];
-                }
-                sum *= compact->weights[offset];
+                    unsigned int p = compact->predecessors[offset];
+                    /* calculate the sum of path weights from i to j with penultimate node p
+                    => we need to sum the paths from i to p but skip the one whose penultimate
+                    node was j */
+                    for (size_t offsetPredOfP = compact->offsets[p]; offsetPredOfP < compact->offsets[p+1]; offsetPredOfP++) {
+                        // skip if current predecessor of p is j
+                        if (compact->predecessors[offsetPredOfP] != j)
+                        sum += pathCounts->data[i * sumDegrees + offsetPredOfP];
+                    }
+                    sum *= compact->weights[offset];
                 }
                 nextPathCounts->data[i * sumDegrees + offset] = sum;
             }
