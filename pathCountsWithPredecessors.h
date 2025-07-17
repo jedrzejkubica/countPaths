@@ -29,7 +29,8 @@ pathCountsWithPredMatrix *buildFirstPathCounts(compactAdjacencyMatrix *compact);
 
 /*
     build a pathCountsWithPredMatrix for paths of length k+1
-    given pathCountsWithPredMatrix for paths of length k,
+    given pathCountsWithPredMatrix for paths of length k
+    (excluding paths looping back to the starting node),
     return a pointer to a freshly allocated structure;
 */
 pathCountsWithPredMatrix *buildNextPathCounts(pathCountsWithPredMatrix *pathCounts,

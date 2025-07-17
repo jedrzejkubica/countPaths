@@ -45,17 +45,20 @@ pathCountsWithPredMatrix *buildNextPathCounts(pathCountsWithPredMatrix *pathCoun
     for (size_t i = 0; i < nbNodes; i++) {
         for (size_t j = 0; j < nbNodes; j++) {
             for (size_t offset = compact->offsets[j]; offset < compact->offsets[j + 1]; offset++) {
+                float sum = 0;
+                // we want to ignore loops so path count is zero if i==j
+                if (i != j) {
                 unsigned int p = compact->predecessors[offset];
                 /* calculate the sum of path weights from i to j with penultimate node p
                 => we need to sum the paths from i to p but skip the one whose penultimate
                 node was j */
-                float sum = 0;
                 for (size_t offsetPredOfP = compact->offsets[p]; offsetPredOfP < compact->offsets[p+1]; offsetPredOfP++) {
                     // skip if current predecessor of p is j
                     if (compact->predecessors[offsetPredOfP] != j)
                     sum += pathCounts->data[i * sumDegrees + offsetPredOfP];
                 }
                 sum *= compact->weights[offset];
+                }
                 nextPathCounts->data[i * sumDegrees + offset] = sum;
             }
         }
