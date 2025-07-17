@@ -1,8 +1,19 @@
+#include <stdio.h>
+
 #include "compactAdjacency.h"
 #include "adjacency.h"
 #include "mem.h"
 
+
 compactAdjacencyMatrix *adjacency2compact(adjacencyMatrix *A) {
+    int checkA = checkAdjacency(A);
+    if (checkA == 1) {
+        fprintf(stderr, "E: weights are not in [0, 1], please fix the network\n");
+        exit(1);
+    } else if (checkA == 2) {
+        fprintf(stderr, "W: your network has self-loops, they have been removed\n");
+    }
+
     compactAdjacencyMatrix *compact = mallocOrDie(sizeof(compactAdjacencyMatrix), "E: OOM for compact\n");
 
     compact->nbNodes = A->nbCols;
