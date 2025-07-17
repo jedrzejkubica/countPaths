@@ -1,15 +1,11 @@
 #include <stdio.h>
 
 #include "pathCountsWithPredecessors.h"
+#include "compactAdjacency.h"
 #include "pathCounts.h"
 #include "mem.h"
 
-/*  
-    sum = 0;
-    for (unsigned int k = compact->offsets[j]; k < compact->offsets[j + 1]; k++)
-        sum += pathCountsWithPred->data[i*offsets[nbNodes] + k]
-    pathCounts[i*nbCols + j] = sum;
-*/
+
 pathCountsMatrix *countPaths(pathCountsWithPredMatrix *pathCountsWithPred, compactAdjacencyMatrix *compact) {
     pathCountsMatrix *pathCounts = mallocOrDie(sizeof(pathCountsMatrix), "E: OOM for path counts matrix\n");
     
@@ -22,9 +18,9 @@ pathCountsMatrix *countPaths(pathCountsWithPredMatrix *pathCountsWithPred, compa
     for (size_t i = 0; i < nbNodes; i++) {
         for (size_t j = 0; j < nbNodes; j++) {
             float sum = 0;
-            for (size_t k = compact->offsets[j]; k < compact->offsets[j + 1]; k++) {
+            for (size_t k = compact->offsets[j]; k < compact->offsets[j + 1]; k++)
                 sum += pathCountsWithPred->data[i * sumDegrees + k];
-            }
+
             pathCounts->data[i * nbNodes + j] = sum;
         }
     }
@@ -34,9 +30,9 @@ pathCountsMatrix *countPaths(pathCountsWithPredMatrix *pathCountsWithPred, compa
 
 void printPathCounts(pathCountsMatrix *pathCounts) {
     for (size_t i = 0; i < pathCounts->nbCols; i++) {
-        for (size_t j = 0; j < pathCounts->nbCols; j++) {
+        for (size_t j = 0; j < pathCounts->nbCols; j++)
             printf("%0.2f ", pathCounts->data[i * pathCounts->nbCols + j]);
-        }
+
         printf("\n");
     }
 }
