@@ -4,10 +4,24 @@
 #include "adjacency.h"
 #include "mem.h"
 
-void removeLoops(adjacencyMatrix *A) {
+int checkAdjacency(adjacencyMatrix *A) {
+    int retVal = 0;
+
+    // remove self-loops
     for (size_t i = 0; i < A->nbCols; i++) {
+        if (A->weights[i * A->nbCols + i] != 0) {
             A->weights[i * A->nbCols + i] = 0;
+            retVal = 2;
+        }
     }
+
+    // check if weights are in [0, 1]
+    for (size_t i = 0; i < A->nbCols; i++)
+        for (size_t j = 1; j < A->nbCols; j++)
+            if ((A->weights[i * A->nbCols + j] < 0) || (A->weights[i * A->nbCols + j] > 1))
+                retVal = 1;
+
+    return(retVal);
 }
 
 /*

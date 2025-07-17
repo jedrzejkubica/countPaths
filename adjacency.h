@@ -15,10 +15,13 @@ typedef struct {
 } adjacencyMatrix;
 
 /*
-    removes edges that connect a node to itself;
-    modifies A in-place
+    check if weights are in [0, 1],
+    remove edges that connect a node to itself,
+    modify A in-place;
+    return 0 if OK, 1 if any weight is not in [0, 1],
+    otherwise 2 if self-loops were removed
 */
-void removeLoops(adjacencyMatrix *A);
+int checkAdjacency(adjacencyMatrix *A);
 
 /*
     parse a SIF file with the network,
