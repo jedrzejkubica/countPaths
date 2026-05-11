@@ -46,7 +46,7 @@ normFactorVector *buildNormFactorVector(compactAdjacencyMatrix *compact, float a
         // convert to float for normFactVec but make sure it fits
         float sumAsFloat = (float)sumOfWeights;
         if (isinf(sumAsFloat)) {
-            fprintf(stderr, "ERROR: sum of weights incoming to node %lu too large", j);
+            fprintf(stderr, "ERROR: sum of weights incoming to node %lu too large\n", j);
             exit(1);
         }
         if (sumAsFloat != 0)

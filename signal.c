@@ -109,7 +109,7 @@ signalMatrix *signalSum(signalWithPredMatrix *signalWithPred, compactAdjacencyMa
                 sum += signalWithPred->data[i * sumDegrees + k];
 
             if (isinf(sum)) {
-                fprintf(stderr, "ERROR: sum of signal from node %lu to node %lu too large", i, j);
+                fprintf(stderr, "ERROR: sum of signal from node %lu to node %lu too large\n", i, j);
                 exit(1);
             }
             signal->data[i * nbNodes + j] = (SIGNALTYPE)sum;

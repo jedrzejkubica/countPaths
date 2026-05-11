@@ -39,7 +39,7 @@ static double calculateNorm(signalMatrix *sumOfSignal);
 void gbaCentrality(network *N, geneScores *causal, float alpha, geneScores *scores) {
     // sanity check:
     if (N->nbNodes != causal->nbGenes) {
-        fprintf(stderr, "ERROR: gbaCentrality() called with network and causal genes of different sizes");
+        fprintf(stderr, "ERROR: gbaCentrality() called with network and causal genes of different sizes\n");
         exit(1);
     }
     size_t nbGenes = causal->nbGenes;
