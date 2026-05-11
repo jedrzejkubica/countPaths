@@ -24,6 +24,7 @@
 
 #include "gbaCentrality.h"
 #include "network.h"
+#include "cacheMats.h"
 #include "compactAdjacency.h"
 #include "normFactor.h"
 #include "signal.h"
@@ -36,7 +37,7 @@
 */
 static double calculateNorm(signalMatrix *sumOfSignal);
 
-void gbaCentrality(network *N, geneScores *causal, float alpha, geneScores *scores) {
+void gbaCentrality(network *N, geneScores *causal, float alpha, geneScores *scores, char *cacheFile) {
     // sanity check:
     if (N->nbNodes != causal->nbGenes) {
         fprintf(stderr, "ERROR: gbaCentrality() called with network and causal genes of different sizes\n");
@@ -44,33 +45,76 @@ void gbaCentrality(network *N, geneScores *causal, float alpha, geneScores *scor
     }
     size_t nbGenes = causal->nbGenes;
 
+    FILE *cacheStream = NULL;
+    // cacheMode: 0 if no cachefile, 1 if using an existing cachefile, 2 if creating a new file
+    int cacheMode = 0;
+    // number of remaining matrices in cache (only meaningful if cacheMode==1)
+    int nbMat = 0;
+    if (cacheFile) {
+        cacheStream = fopen(cacheFile, "r");
+        if (cacheStream) {
+            cacheMode = 1;
+            nbMat = loadMatInit(cacheStream, N, alpha);
+            if (nbMat == -1) {
+                fprintf(stderr, "ERROR: gbaCentrality() called with mismatched network and cacheFile\n");
+                fprintf(stderr, "provide a non-existing cacheFile to create a cache from the current network\n");
+                exit(1);
+            }
+        }
+        else {
+            cacheMode = 2;
+            // need write AND read access for saveMat()
+            cacheStream = fopen(cacheFile, "w+");
+            if (cacheStream == NULL) {
+                fprintf(stderr, "ERROR: gbaCentrality() called with cacheFile that doesn't exist and can't be created\n");
+                fprintf(stderr, "The path must exist, does it? And do you have write permissions there?\n");
+                exit(1);
+            }
+            saveMatInit(cacheStream, N, alpha);
+        }
+    }
+    
     // start by copying causal scores, ie scores = alpha**0 * causal * I
     memcpy(scores->scores, causal->scores, nbGenes * sizeof(SCORETYPE));
 
-    compactAdjacencyMatrix *networkComp = network2compact(N);
-
-    // calculate normalization factors (used in each iteration)
-
-    #ifdef DEBUG
-        fprintf(stderr, "INFO gbaCentrality(): calculating normalization factors\n");
-    #endif
-    normFactorVector *normFactVec = buildNormFactorVector(networkComp, alpha);
-    
-    #ifdef DEBUG
-        fprintf(stderr, "INFO gbaCentrality(): calculating B_1\n");
-    #endif
-    signalWithPredMatrix *signalCurrent = buildFirstSignal(networkComp, normFactVec);
-    signalMatrix *sumOfSignal = signalSum(signalCurrent, networkComp);
-
-    double normOfMat = calculateNorm(sumOfSignal);
-    #ifdef DEBUG
-        fprintf(stderr, "INFO gbaCentrality(): normOfMat = %f\n", normOfMat);
-    #endif
-
-    size_t k = 1;
     // for convergence test
     double threshold = 1E-4;
+    size_t k = 1;
 
+    // following won't be really used if cacheMode==1, but must be declared in this scope
+    compactAdjacencyMatrix *networkComp = NULL;
+    normFactorVector *normFactVec = NULL;
+    signalWithPredMatrix *signalCurrent = NULL;
+    signalMatrix *sumOfSignal = NULL;
+    double normOfMat;
+
+    if (cacheMode != 1) {
+        networkComp = network2compact(N);
+        // calculate normalization factors (used in each iteration)
+        normFactVec = buildNormFactorVector(networkComp, alpha);
+    
+        #ifdef DEBUG
+        fprintf(stderr, "INFO gbaCentrality(): calculating B_%ld\n", k);
+        #endif
+        signalCurrent = buildFirstSignal(networkComp, normFactVec);
+        sumOfSignal = signalSum(signalCurrent, networkComp);
+
+        normOfMat = calculateNorm(sumOfSignal);
+        #ifdef DEBUG
+        fprintf(stderr, "INFO gbaCentrality(): normOfMat = %f\n", normOfMat);
+        #endif
+    }
+    else if (nbMat > 0) {
+        sumOfSignal = loadNextMat(cacheStream, N->nbNodes);
+        nbMat--;
+        // we want to keep going until there are no more cached matrices
+        normOfMat = threshold + 1;
+    }
+    else {
+        // no matrices at all, strange but whatever
+        normOfMat = threshold - 1;
+    }
+    
     while (normOfMat > threshold) {
         // update scores with effect of causal genes at distance K: scores += causal * B_k
         #pragma omp parallel for
@@ -80,28 +124,49 @@ void gbaCentrality(network *N, geneScores *causal, float alpha, geneScores *scor
             }
         }
 
-        // build B_(k+1) for next iteration
+        // save B_k matrix to cache if requested
+        if (cacheMode == 2)
+            saveMat(cacheStream, sumOfSignal);
 
-        #ifdef DEBUG
+        if (cacheMode != 1) {
+            // build B_(k+1) for next iteration
+            #ifdef DEBUG
             fprintf(stderr, "INFO gbaCentrality(): calculating B_%ld\n", k+1);
-        #endif
-        signalWithPredMatrix *signalNext = buildNextSignal(signalCurrent, sumOfSignal, networkComp, normFactVec);
+            #endif
+            signalWithPredMatrix *signalNext = buildNextSignal(signalCurrent, sumOfSignal, networkComp, normFactVec);
 
-        freeSignalWithPred(signalCurrent);
-        signalCurrent = signalNext;
-        freeSignal(sumOfSignal);
-        sumOfSignal = signalSum(signalCurrent, networkComp);
-        normOfMat = calculateNorm(sumOfSignal);
-        #ifdef DEBUG
+            freeSignalWithPred(signalCurrent);
+            signalCurrent = signalNext;
+            freeSignal(sumOfSignal);
+            sumOfSignal = signalSum(signalCurrent, networkComp);
+            normOfMat = calculateNorm(sumOfSignal);
+            #ifdef DEBUG
             fprintf(stderr, "INFO gbaCentrality(): normOfMat = %f\n", normOfMat);
-        #endif
+            #endif
+        }
+        else if (nbMat > 0) {
+            freeSignal(sumOfSignal);
+            sumOfSignal = loadNextMat(cacheStream, N->nbNodes);
+            nbMat--;
+            normOfMat = threshold + 1;
+        }
+        else {
+            // cacheMode==1 but no remaining matrices
+            freeSignal(sumOfSignal);
+            normOfMat = threshold - 1;
+        }
         k++;
     }
-    freeNormFactorVector(normFactVec);
-    freeSignalWithPred(signalCurrent);
-    freeSignal(sumOfSignal);
-    freeCompactAdjacency(networkComp);
+
+    if (cacheMode != 1) {
+        // clean up
+        freeNormFactorVector(normFactVec);
+        freeSignalWithPred(signalCurrent);
+        freeSignal(sumOfSignal);
+        freeCompactAdjacency(networkComp);
+    }
 }
+
 
 /*
   Return Frobenius norm of sumOfSignal

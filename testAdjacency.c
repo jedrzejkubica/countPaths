@@ -264,7 +264,7 @@ int main(void) {
         result->nbGenes = causal->nbGenes;
         result->scores = mallocOrDie(causal->nbGenes * sizeof(SCORETYPE), "E: OOM for result scores");
 
-        gbaCentrality(threeW, causal, 0.5, result);
+        gbaCentrality(threeW, causal, 0.5, result, NULL);
         printf("threeWeighted scores\n");
         printScores(result);
         // compare with expected final scores
@@ -291,7 +291,7 @@ int main(void) {
         result->nbGenes = causal->nbGenes;
         result->scores = mallocOrDie(causal->nbGenes * sizeof(SCORETYPE), "E: OOM for result scores");
 
-        gbaCentrality(diam4, causal, 0.5, result);
+        gbaCentrality(diam4, causal, 0.5, result, NULL);
         printf("Diam4 scores\n");
         printScores(result);
         // compare with expected final scores
@@ -319,7 +319,7 @@ int main(void) {
         result->nbGenes = causal->nbGenes;
         result->scores = mallocOrDie(causal->nbGenes * sizeof(SCORETYPE), "E: OOM for result scores");
 
-        gbaCentrality(diam6, causal, 0.5, result);
+        gbaCentrality(diam6, causal, 0.5, result, NULL);
         printf("diam6 scores\n");
         // TODO compare with expected
         printScores(result);
@@ -330,9 +330,9 @@ int main(void) {
     }
     printf("\n#############################################################################\n");
     {
-        // asymmetric network
+        // asymmetric network, creating a cache file
         network *asym = asymmetric();
-        printf("asymmetric with one hub\n");
+        printf("asymmetric with one hub, creating cache file on the fly\n");
         printNetwork(asym);
     
         geneScores *causal = causalGenesAsym();
@@ -343,7 +343,7 @@ int main(void) {
         result->nbGenes = causal->nbGenes;
         result->scores = mallocOrDie(causal->nbGenes * sizeof(SCORETYPE), "E: OOM for result scores");
 
-        gbaCentrality(asym, causal, 0.5, result);
+        gbaCentrality(asym, causal, 0.5, result, "cachefile_GBA_asym");
         printf("ASYM scores\n");
         printScores(result);
         // compare with expected:
@@ -356,6 +356,37 @@ int main(void) {
         freeNetwork(asym);
         freeScores(causal);
         freeScores(result);
+    }
+    printf("\n#############################################################################\n");
+    {
+        // asymmetric network, using the cache file
+        network *asym = asymmetric();
+        printf("asymmetric with one hub, using the cache file we created\n");
+        printNetwork(asym);
+    
+        geneScores *causal = causalGenesAsym();
+        printf("ASYM causal genes:\n");
+        printScores(causal);
+
+        geneScores *result = mallocOrDie(sizeof(geneScores), "E: OOM for result scores");
+        result->nbGenes = causal->nbGenes;
+        result->scores = mallocOrDie(causal->nbGenes * sizeof(SCORETYPE), "E: OOM for result scores");
+
+        gbaCentrality(asym, causal, 0.5, result, "cachefile_GBA_asym");
+        printf("ASYM scores (using cached matrices)\n");
+        printScores(result);
+        // compare with expected:
+        if ((result->scores[0] == 0.5) && (result->scores[1] == 1) && (fabsf(result->scores[2] - 0.1f) < EPSILON) &&
+            (fabsf(result->scores[3] - 0.05f) < EPSILON) && (fabsf(result->scores[4] - 0.05f) < EPSILON) &&
+            (fabsf(result->scores[5] - 0.05f) < EPSILON) && (fabsf(result->scores[6] - 0.05f) < EPSILON))
+            printf("AOK, SCORES ARE AS EXPECTED\n");
+        else
+            printf("ERROR: SCORES FOR ASYM network USING CACHE ARE WRONG!\n");
+        freeNetwork(asym);
+        freeScores(causal);
+        freeScores(result);
+        // clean up cachefile
+        remove("cachefile_GBA_asym");
     }
     printf("\n#############################################################################\n");
 
