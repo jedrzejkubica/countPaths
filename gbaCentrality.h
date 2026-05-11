@@ -27,7 +27,7 @@
 
 /*
   gbaCentrality() is the only symbol we want to export in the shared library
-  -> we will compile with -fvisibility=hidden and changed to "default" here
+  -> we will compile with -fvisibility=hidden and change to "default" here
 */
 #pragma GCC visibility push(default)
 

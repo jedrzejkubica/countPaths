@@ -62,16 +62,16 @@ void gbaCentrality(network *N, geneScores *causal, float alpha, geneScores *scor
     signalWithPredMatrix *signalCurrent = buildFirstSignal(networkComp, normFactVec);
     signalMatrix *sumOfSignal = signalSum(signalCurrent, networkComp);
 
-    double scoresDiff = calculateNorm(sumOfSignal);
+    double normOfMat = calculateNorm(sumOfSignal);
     #ifdef DEBUG
-        fprintf(stderr, "INFO gbaCentrality(): scoresDiff = %f\n", scoresDiff);
+        fprintf(stderr, "INFO gbaCentrality(): normOfMat = %f\n", normOfMat);
     #endif
 
     size_t k = 1;
     // for convergence test
     double threshold = 1E-4;
 
-    while (scoresDiff > threshold) {
+    while (normOfMat > threshold) {
         // update scores with effect of causal genes at distance K: scores += causal * B_k
         #pragma omp parallel for
         for (size_t j = 0; j < nbGenes; j++) {
@@ -91,9 +91,9 @@ void gbaCentrality(network *N, geneScores *causal, float alpha, geneScores *scor
         signalCurrent = signalNext;
         freeSignal(sumOfSignal);
         sumOfSignal = signalSum(signalCurrent, networkComp);
-        scoresDiff = calculateNorm(sumOfSignal);
+        normOfMat = calculateNorm(sumOfSignal);
         #ifdef DEBUG
-            fprintf(stderr, "INFO gbaCentrality(): scoresDiff = %f\n", scoresDiff);
+            fprintf(stderr, "INFO gbaCentrality(): normOfMat = %f\n", normOfMat);
         #endif
         k++;
     }
