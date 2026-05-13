@@ -27,6 +27,8 @@
 
 
 /* the cache file will contain in binary form:
+   CACHE_MAGIC
+   CACHE_VERSION
    nbMat (number of matrices stored in file)
    net->nbNodes
    net->nbEdges
@@ -34,11 +36,18 @@
    alpha
    each of the nbMat signalMatrix->data
 */
+#define CACHE_MAGIC "GBA-C"
+#define CACHE_VERSION 1.0
 
 void saveMatInit(FILE *cacheStream, network *net, float alpha) {
     // we don't yet know how many matrices there will be
     int nbMat = 0;
-    if ((fwrite(&(nbMat), sizeof(nbMat), 1, cacheStream) != 1) ||
+    /* use a SIGNALTYPE for VERSION, so we also make sure the SIGNALTYPE representation is the
+       same on the running machine and on the machine that built the cache (endianness/format). */
+    SIGNALTYPE version = (SIGNALTYPE)CACHE_VERSION;
+    if ((fwrite(CACHE_MAGIC, 1, 5, cacheStream) != 5) ||
+        (fwrite(&(version), sizeof(version), 1, cacheStream) != 1) ||
+        (fwrite(&(nbMat), sizeof(nbMat), 1, cacheStream) != 1) ||
         (fwrite(&(net->nbNodes), sizeof(net->nbNodes), 1, cacheStream) != 1) ||
         (fwrite(&(net->nbEdges), sizeof(net->nbEdges), 1, cacheStream) != 1) ||
         (fwrite(net->edges, sizeof(edge), net->nbEdges, cacheStream) != net->nbEdges) ||
@@ -68,6 +77,16 @@ void saveMat(FILE *cacheStream, signalMatrix *nextMat) {
 
 
 int loadMatInit(FILE *cacheStream, network *net, float alpha) {
+    char magic[5];
+    if ((fread(magic, 1, 5, cacheStream) != 5) || (memcmp(magic, CACHE_MAGIC, 5) != 0)) {
+        fprintf(stderr, "ERROR: cache magic mismatch, this doesn't look like a GBA cacheFile\n");
+        return(-1);
+    }
+    SIGNALTYPE version;
+    if ((fread(&version, sizeof(SIGNALTYPE), 1, cacheStream) != 1) || (version != (SIGNALTYPE)CACHE_VERSION)) {
+        fprintf(stderr, "ERROR: cacheFile version or endianness/format mismatch, make a fresh cache\n");
+        return -1;
+    }
     int nbMat;
     size_t dataRead = fread(&(nbMat), sizeof(nbMat), 1, cacheStream);
     unsigned long int nbNodes, nbEdges;
