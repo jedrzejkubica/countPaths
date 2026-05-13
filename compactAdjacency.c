@@ -25,25 +25,15 @@
 #include "mem.h"
 
 
-compactAdjacencyMatrix *network2compact(network *N) {
-    long int nbSelfLoops = checkNetwork(N);
-    if (nbSelfLoops == -1) {
-        fprintf(stderr, "E: weights are not in ]0, 1], please fix the network\n");
-        exit(1);
-    } else if (nbSelfLoops == 1) {
-        fprintf(stderr, "WARNING: your network has 1 self-loop, it has been removed\n");
-    } else if (nbSelfLoops > 1) {
-        fprintf(stderr, "WARNING: your network has %li self-loops, they have been removed\n", nbSelfLoops);
-    }
-   
+compactAdjacencyMatrix *network2compact(network *N, long int nbZeroWeight) {
     compactAdjacencyMatrix *compact = mallocOrDie(sizeof(compactAdjacencyMatrix), "E: OOM for compact\n");
 
     compact->nbNodes = N->nbNodes;
     compact->offsets = mallocOrDie(sizeof(size_t) * (N->nbNodes + 1), "E: OOM for offsets\n");
-    compact->predecessors = mallocOrDie(sizeof(size_t) * (N->nbEdges - nbSelfLoops),
+    compact->predecessors = mallocOrDie(sizeof(size_t) * (N->nbEdges - nbZeroWeight),
                                         "E: OOM for predecessors\n");
-    compact->weights = mallocOrDie(sizeof(float) * (N->nbEdges - nbSelfLoops), "E: OOM for weights\n");
-    compact->offsetsReverseEdge = mallocOrDie(sizeof(size_t) * (N->nbEdges - nbSelfLoops),
+    compact->weights = mallocOrDie(sizeof(float) * (N->nbEdges - nbZeroWeight), "E: OOM for weights\n");
+    compact->offsetsReverseEdge = mallocOrDie(sizeof(size_t) * (N->nbEdges - nbZeroWeight),
                                               "E: OOM for offsetsReverseEdge\n");
 
     size_t sumInDegrees = 0;
@@ -52,7 +42,7 @@ compactAdjacencyMatrix *network2compact(network *N) {
     compact->offsets[0] = 0;
 
     for (size_t ei = 0; ei < N->nbEdges; ei++) {
-        // ignore zero-weight self-loops
+        // ignore zero-weight edges
         if (currentEdgeP->weight == 0) {
             currentEdgeP++;
             continue;
@@ -70,7 +60,7 @@ compactAdjacencyMatrix *network2compact(network *N) {
         compact->offsets[++currentDest] = sumInDegrees;
 
     // sanity check
-    assert(sumInDegrees + nbSelfLoops == N->nbEdges);
+    assert(sumInDegrees + nbZeroWeight == N->nbEdges);
 
     // fill offsetsReverseEdge
     for (size_t j = 0; j < N->nbNodes; j++) {

@@ -58,11 +58,11 @@ typedef struct {
 
 /*
   Allocate and populate a compactAdjacencyMatrix from a network.
-  Pre-conditions: the network's edges must be sorted by increasing
-  dest then increasing source, and must not contain self-interactions;
+  Pre-conditions: the network's edges must be sorted by increasing dest
+  then increasing source, and any self-interactions must be zero-weight;
   these are true if the network went through checkNetwork()
  */
-compactAdjacencyMatrix *network2compact(network *N);
+compactAdjacencyMatrix *network2compact(network *N, long int nbZeroWeight);
 
 void freeCompactAdjacency(compactAdjacencyMatrix *compactA);
 
