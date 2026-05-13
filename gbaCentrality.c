@@ -45,6 +45,19 @@ void gbaCentrality(network *N, geneScores *causal, float alpha, geneScores *scor
     }
     size_t nbGenes = causal->nbGenes;
 
+    // check network, set self-loops to zero-weight, sort by dest then source
+    long int nbZeroWeightEdges = checkNetwork(N);
+    if (nbZeroWeightEdges == -1) {
+        fprintf(stderr, "E: weights are not in [0, 1], please fix the network\n");
+        exit(1);
+    } else if (nbZeroWeightEdges == 1) {
+        fprintf(stderr, "INFO: your network has 1 self-loop or zero-weight edge, it will be ignored\n");
+    } else if (nbZeroWeightEdges > 1) {
+        fprintf(stderr, "INFO: your network has %li self-loops and/or zero-weight edges, they will be ignored\n",
+                nbZeroWeightEdges);
+    }
+
+
     FILE *cacheStream = NULL;
     // cacheMode: 0 if no cachefile, 1 if using an existing cachefile, 2 if creating a new file
     int cacheMode = 0;
@@ -89,7 +102,7 @@ void gbaCentrality(network *N, geneScores *causal, float alpha, geneScores *scor
     double normOfMat;
 
     if (cacheMode != 1) {
-        networkComp = network2compact(N);
+        networkComp = network2compact(N, nbZeroWeightEdges);
         // calculate normalization factors (used in each iteration)
         normFactVec = buildNormFactorVector(networkComp, alpha);
     
