@@ -171,8 +171,10 @@ void gbaCentrality(network *N, geneScores *causal, float alpha, geneScores *scor
         k++;
     }
 
+    // clean up
+    if (cacheMode != 0)
+        fclose(cacheStream);
     if (cacheMode != 1) {
-        // clean up
         freeNormFactorVector(normFactVec);
         freeSignalWithPred(signalCurrent);
         freeSignal(sumOfSignal);
