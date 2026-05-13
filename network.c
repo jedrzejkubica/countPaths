@@ -62,7 +62,15 @@ long int checkNetwork(network *N) {
     }
     // sort the edges in-place
     qsort(N->edges, N->nbEdges, sizeof(edge), compEdges);
-    return(nbSelfLoops);
+    // make sure we don't have the same edge twice
+    edgeP = N->edges;
+    for (size_t i = 1; i < N->nbEdges; i++) {
+        if ((edgeP->dest == (edgeP+1)->dest) && (edgeP->source == (edgeP+1)->source))
+            // duplicate edge
+            return(-1);
+        edgeP++;
+    }
+    return(nbZeroWeightEdges);
 }
 
 void freeNetwork(network *N) {
