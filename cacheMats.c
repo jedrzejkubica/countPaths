@@ -85,10 +85,12 @@ int loadMatInit(FILE *cacheStream, network *net, float alpha) {
     edge *edges = mallocOrDie(nbEdges * sizeof(edge), "E: OOM for temp edges in loadMatInit\n");
     if (fread(edges, sizeof(edge), nbEdges, cacheStream) != nbEdges) {
         fprintf(stderr, "ERROR: cannot read edges from provided cachefile\n");
+        free(edges);
         return(-1);
     }
     if (memcmp(edges, net->edges, sizeof(edge) * nbEdges) != 0) {
         fprintf(stderr, "ERROR: provided cachefile doesn't correspond to network (edges)\n");
+        free(edges);
         return(-1);
     }
     // OK we don't need edges anymore
