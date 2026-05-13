@@ -44,19 +44,21 @@ int compEdges(const void *elem1, const void *elem2) {
 }
 
 long int checkNetwork(network *N) {
-    long int nbSelfLoops = 0;
+    long int nbZeroWeightEdges = 0;
 
     edge *edgeP = N->edges;
     for (size_t i = 0; i < N->nbEdges; i++) {
-        // check if weights are in ]0, 1]
-        if ((edgeP->weight <= 0) || (edgeP->weight > 1)) {
+        // check if weights are in [0, 1]
+        if ((edgeP->weight < 0) || (edgeP->weight > 1)) {
             // immediately return, we can't do anything with this network
             return(-1);
         }
-        // remove self-loops
-        if (edgeP->source == edgeP->dest) {
+        else if (edgeP->weight == 0)
+            nbZeroWeightEdges++;
+        else if (edgeP->source == edgeP->dest) {
+            // self-loop
             edgeP->weight = 0;
-            nbSelfLoops++;
+            nbZeroWeightEdges++;
         }
         edgeP++;
     }
