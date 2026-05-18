@@ -152,7 +152,8 @@ static int gbaCentralityFromCache(network *N, geneScores *causal, float alpha, g
   Fill scores with GBA-centrality, calculating GBA matrices and
   saving them to cacheFile if non-NULL.
   Pre-condition: checkNetwork(N) was called beforehand.
-  Die on errors (eg OOM or issue saving to cacheFile).
+  On errors (eg OOM or issue saving to cacheFile), remove (incomplete)
+  cacheFile and exit(1).
 */
 static void gbaCentralityNoCache(network *N, geneScores *causal, float alpha, geneScores *scores, char *cacheFile) {
     size_t nbGenes = causal->nbGenes;
@@ -172,6 +173,8 @@ static void gbaCentralityNoCache(network *N, geneScores *causal, float alpha, ge
         }
         if (saveMatInit(cacheStream, N, alpha) == -1) {
             fprintf(stderr, "ERROR: gbaCentralityNoCache() called to build cacheFile but saveMatInit() failed\n");
+            fclose(cacheStream);
+            remove(cacheFile);
             exit(1);
         }
     }
@@ -199,6 +202,8 @@ static void gbaCentralityNoCache(network *N, geneScores *causal, float alpha, ge
         // save M~_k matrix to cache if requested
         if ((cacheStream) && (saveMat(cacheStream, sumOfSignal) == -1)) {
             fprintf(stderr, "ERROR: gbaCentrality() called to build cacheFile but saveMat() failed\n");
+            fclose(cacheStream);
+            remove(cacheFile);
             exit(1);
         }
         
