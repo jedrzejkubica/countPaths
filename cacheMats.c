@@ -29,7 +29,6 @@
 /* the cache file will contain in binary form:
    CACHE_MAGIC
    CACHE_VERSION
-   nbMat (number of matrices stored in file)
    net->nbNodes
    net->nbEdges
    the net->edges data
@@ -40,14 +39,11 @@
 #define CACHE_VERSION 1.0
 
 int saveMatInit(FILE *cacheStream, network *net, float alpha) {
-    // we don't yet know how many matrices there will be
-    int nbMat = 0;
     /* use a SIGNALTYPE for VERSION, so we also make sure the SIGNALTYPE representation is the
        same on the running machine and on the machine that built the cache (endianness/format). */
     SIGNALTYPE version = (SIGNALTYPE)CACHE_VERSION;
     if ((fwrite(CACHE_MAGIC, 1, strlen(CACHE_MAGIC), cacheStream) != strlen(CACHE_MAGIC)) ||
         (fwrite(&(version), sizeof(version), 1, cacheStream) != 1) ||
-        (fwrite(&(nbMat), sizeof(nbMat), 1, cacheStream) != 1) ||
         (fwrite(&(net->nbNodes), sizeof(net->nbNodes), 1, cacheStream) != 1) ||
         (fwrite(&(net->nbEdges), sizeof(net->nbEdges), 1, cacheStream) != 1) ||
         (fwrite(net->edges, sizeof(edge), net->nbEdges, cacheStream) != net->nbEdges) ||
@@ -65,21 +61,12 @@ int saveMat(FILE *cacheStream, signalMatrix *nextMat) {
         fprintf(stderr, "ERROR: cannot save next mat to cachefile, is your partition full?\n");
         return(-1);
     }
-    // increment nbMat
-    long currentPos = ftell(cacheStream);
-    fseek(cacheStream, strlen(CACHE_MAGIC) + sizeof(SIGNALTYPE), SEEK_SET);
-    int nbMat;
-    fread(&(nbMat), sizeof(nbMat), 1, cacheStream);
-    nbMat++;
-    fseek(cacheStream, strlen(CACHE_MAGIC) + sizeof(SIGNALTYPE), SEEK_SET);
-    fwrite(&(nbMat), sizeof(nbMat), 1, cacheStream);
-    fseek(cacheStream, currentPos, SEEK_SET);
     return(0);
 }
 
 
 int loadMatInit(FILE *cacheStream, network *net, float alpha) {
-    // init to CACHE_MAGIC so size is correct, we will then squash the content with fread
+    // init magic to CACHE_MAGIC so size is correct, we will then squash the content with fread
     char magic[] = CACHE_MAGIC;
     if ((fread(magic, 1, strlen(CACHE_MAGIC), cacheStream) != strlen(CACHE_MAGIC)) ||
         (memcmp(magic, CACHE_MAGIC, strlen(CACHE_MAGIC)) != 0)) {
@@ -89,14 +76,12 @@ int loadMatInit(FILE *cacheStream, network *net, float alpha) {
     SIGNALTYPE version;
     if ((fread(&version, sizeof(SIGNALTYPE), 1, cacheStream) != 1) || (version != (SIGNALTYPE)CACHE_VERSION)) {
         fprintf(stderr, "ERROR: cacheFile version or endianness/format mismatch, make a fresh cache\n");
-        return -1;
+        return(-1);
     }
-    int nbMat;
-    size_t dataRead = fread(&(nbMat), sizeof(nbMat), 1, cacheStream);
     unsigned long int nbNodes, nbEdges;
-    dataRead += fread(&(nbNodes), sizeof(nbNodes), 1, cacheStream);
+    size_t dataRead = fread(&(nbNodes), sizeof(nbNodes), 1, cacheStream);
     dataRead += fread(&(nbEdges), sizeof(nbEdges), 1, cacheStream);
-    if (dataRead != 3) {
+    if (dataRead != 2) {
         fprintf(stderr, "ERROR: cannot read header from provided cachefile\n");
         return(-1);
     }
@@ -127,11 +112,18 @@ int loadMatInit(FILE *cacheStream, network *net, float alpha) {
     }
 
     // if we got here: AOK, cache matches network
-    return(nbMat);
+    return(0);
 }
 
 
 signalMatrix *loadNextMat(FILE *cacheStream, size_t nbNodes) {
+    // is cacheStream empty?
+    int nextC = fgetc(cacheStream);
+    if (nextC == EOF)
+        return(NULL);
+    else
+        ungetc(nextC, cacheStream);
+
     signalMatrix *nextMat = mallocOrDie(sizeof(signalMatrix), "OOM for signalMatrix in loadNextMat\n");
     nextMat->nbNodes = nbNodes;
     size_t nbElem = nbNodes * nbNodes;

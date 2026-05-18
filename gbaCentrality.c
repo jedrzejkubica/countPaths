@@ -126,22 +126,21 @@ static int gbaCentralityFromCache(network *N, geneScores *causal, float alpha, g
         fprintf(stderr, "ERROR: gbaCentralityFromCache() called but cacheFile can't be opened\n");
         exit(1);
     }
-    // number of remaining matrices in cache
-    int nbMat = loadMatInit(cacheStream, N, alpha);
-    if (nbMat == -1) {
+    if (loadMatInit(cacheStream, N, alpha) == -1) {
         fprintf(stderr, "ERROR: gbaCentrality() called with mismatched network and cacheFile\n");
         fprintf(stderr, "provide a non-existing cacheFile to create a cache from the current network\n");
+        fclose(cacheStream);
         return(-1);
     }
-    
+
     // start by copying causal scores, ie scores = alpha**0 * causal * I
     memcpy(scores->scores, causal->scores, nbGenes * sizeof(SCORETYPE));
 
-    while (nbMat > 0) {
-        signalMatrix *sumOfSignal = loadNextMat(cacheStream, N->nbNodes);
-        nbMat--;
+    signalMatrix *sumOfSignal = loadNextMat(cacheStream, N->nbNodes);
+    while (sumOfSignal != NULL) {
         updateScores(scores, causal, sumOfSignal);
         freeSignal(sumOfSignal);
+        sumOfSignal = loadNextMat(cacheStream, N->nbNodes);
     }
     fclose(cacheStream);
     return(0);
@@ -164,8 +163,7 @@ static void gbaCentralityNoCache(network *N, geneScores *causal, float alpha, ge
             fprintf(stderr, "ERROR: gbaCentralityNoCache() called but cacheFile exists\n");
             exit(1);
         }
-        // need write AND read access for saveMat()
-        cacheStream = fopen(cacheFile, "w+");
+        cacheStream = fopen(cacheFile, "w");
         if (cacheStream == NULL) {
             fprintf(stderr, "ERROR: gbaCentralityNoCache() called but cacheFile can't be created\n");
             fprintf(stderr, "The path must exist, does it? And do you have write permissions there?\n");

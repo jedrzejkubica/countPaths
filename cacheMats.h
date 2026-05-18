@@ -41,7 +41,7 @@ int saveMatInit(FILE *cacheStream, network *net, float alpha);
 
 /*
   Save nextMat->data to cacheStream.
-  cacheStream must be open for writing AND reading.
+  cacheStream must be open for writing.
   Return 0 if AOK, -1 if something fails (and log an error message on stderr).
 */
 int saveMat(FILE *cacheStream, signalMatrix *nextMat);
@@ -50,15 +50,15 @@ int saveMat(FILE *cacheStream, signalMatrix *nextMat);
 /*
   Load a network from cachStream and compare with net/alpha.
   Return -1 if data in cacheStream doesn't correspond to net/alpha or
-  if there was an error reading cacheStream,
-  the number of cached matrices otherwise.
+  if there was an error reading cacheStream, 0 if AOK.
   After the call, cacheStream points to the first signalMatrix->data.
 */
 int loadMatInit(FILE *cacheStream, network *net, float alpha);
 
 
 /*
-  Return a signalMatrix (allocated here) containing the next matrix stored in cacheStream.
+  Return a signalMatrix (allocated here) containing the next matrix stored
+  in cacheStream if any, NULL otherwwise.
   After the call, cacheStream points to the next signalMatrix->data (if any).
   Die on errors (OOM, cache is broken, read error).
 */
