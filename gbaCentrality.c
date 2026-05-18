@@ -36,6 +36,12 @@
   Private function: return a norm of the sumOfsignal matrix
 */
 static double calculateNorm(signalMatrix *sumOfSignal);
+/*
+  Private function: update scores with effect of causal genes via signalMat
+*/
+static void updateScores(geneScores *scores, geneScores *causal, signalMatrix *signalMat);
+
+
 
 void gbaCentrality(network *N, geneScores *causal, float alpha, geneScores *scores, char *cacheFile) {
     // sanity check:
@@ -133,13 +139,7 @@ void gbaCentrality(network *N, geneScores *causal, float alpha, geneScores *scor
     
     while (normOfMat > threshold) {
         // update scores with effect of causal genes at distance K: scores += causal * B_k
-        #pragma omp parallel for
-        for (size_t j = 0; j < nbGenes; j++) {
-            for (size_t i = 0; i < nbGenes; i++) {
-                scores->scores[j] += causal->scores[i] * sumOfSignal->data[i* nbGenes + j];
-            }
-        }
-
+        updateScores(scores, causal, sumOfSignal);
         // save B_k matrix to cache if requested
         if (cacheMode == 2) {
             if (saveMat(cacheStream, sumOfSignal) == -1) {
@@ -200,4 +200,17 @@ static double calculateNorm(signalMatrix *sumOfSignal) {
     }
     frobNorm = sqrt(frobNorm);
     return(frobNorm);
+}
+
+/*
+  Update scores with effect of causal genes via signalMat: scores += causal * signalMat
+*/
+static void updateScores(geneScores *scores, geneScores *causal, signalMatrix *signalMat) {
+    size_t nbGenes = causal->nbGenes;
+    #pragma omp parallel for
+    for (size_t j = 0; j < nbGenes; j++) {
+        for (size_t i = 0; i < nbGenes; i++) {
+            scores->scores[j] += causal->scores[i] * signalMat->data[i* nbGenes + j];
+        }
+    }
 }
