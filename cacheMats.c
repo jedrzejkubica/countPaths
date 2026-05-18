@@ -66,11 +66,11 @@ void saveMat(FILE *cacheStream, signalMatrix *nextMat) {
     }
     // increment nbMat
     long currentPos = ftell(cacheStream);
-    rewind(cacheStream);
+    fseek(cacheStream, strlen(CACHE_MAGIC) + sizeof(SIGNALTYPE), SEEK_SET);
     int nbMat;
     fread(&(nbMat), sizeof(nbMat), 1, cacheStream);
     nbMat++;
-    rewind(cacheStream);
+    fseek(cacheStream, strlen(CACHE_MAGIC) + sizeof(SIGNALTYPE), SEEK_SET);
     fwrite(&(nbMat), sizeof(nbMat), 1, cacheStream);
     fseek(cacheStream, currentPos, SEEK_SET);
 }
