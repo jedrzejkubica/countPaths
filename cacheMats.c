@@ -45,7 +45,7 @@ void saveMatInit(FILE *cacheStream, network *net, float alpha) {
     /* use a SIGNALTYPE for VERSION, so we also make sure the SIGNALTYPE representation is the
        same on the running machine and on the machine that built the cache (endianness/format). */
     SIGNALTYPE version = (SIGNALTYPE)CACHE_VERSION;
-    if ((fwrite(CACHE_MAGIC, 1, 5, cacheStream) != 5) ||
+    if ((fwrite(CACHE_MAGIC, 1, strlen(CACHE_MAGIC), cacheStream) != strlen(CACHE_MAGIC)) ||
         (fwrite(&(version), sizeof(version), 1, cacheStream) != 1) ||
         (fwrite(&(nbMat), sizeof(nbMat), 1, cacheStream) != 1) ||
         (fwrite(&(net->nbNodes), sizeof(net->nbNodes), 1, cacheStream) != 1) ||
@@ -77,8 +77,10 @@ void saveMat(FILE *cacheStream, signalMatrix *nextMat) {
 
 
 int loadMatInit(FILE *cacheStream, network *net, float alpha) {
-    char magic[5];
-    if ((fread(magic, 1, 5, cacheStream) != 5) || (memcmp(magic, CACHE_MAGIC, 5) != 0)) {
+    // init to CACHE_MAGIC so size is correct, we will then squash the content with fread
+    char magic[] = CACHE_MAGIC;
+    if ((fread(magic, 1, strlen(CACHE_MAGIC), cacheStream) != strlen(CACHE_MAGIC)) ||
+        (memcmp(magic, CACHE_MAGIC, strlen(CACHE_MAGIC)) != 0)) {
         fprintf(stderr, "ERROR: cache magic mismatch, this doesn't look like a GBA cacheFile\n");
         return(-1);
     }
