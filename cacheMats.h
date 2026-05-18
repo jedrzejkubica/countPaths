@@ -19,7 +19,7 @@
 #ifndef _CACHEMATS_H_
 #define _CACHEMATS_H_
 
-#include <stdio.h>
+#include <zlib.h>
 
 #include "network.h"
 #include "signal.h"
@@ -36,7 +36,7 @@
   cacheStream must be open for writing.
   Return 0 if AOK, -1 if something fails (and log an error message on stderr).
 */
-int saveMatInit(FILE *cacheStream, network *net, float alpha);
+int saveMatInit(gzFile cacheStream, network *net, float alpha);
 
 
 /*
@@ -44,7 +44,7 @@ int saveMatInit(FILE *cacheStream, network *net, float alpha);
   cacheStream must be open for writing.
   Return 0 if AOK, -1 if something fails (and log an error message on stderr).
 */
-int saveMat(FILE *cacheStream, signalMatrix *nextMat);
+int saveMat(gzFile cacheStream, signalMatrix *nextMat);
 
 
 /*
@@ -53,7 +53,7 @@ int saveMat(FILE *cacheStream, signalMatrix *nextMat);
   if there was an error reading cacheStream, 0 if AOK.
   After the call, cacheStream points to the first signalMatrix->data.
 */
-int loadMatInit(FILE *cacheStream, network *net, float alpha);
+int loadMatInit(gzFile cacheStream, network *net, float alpha);
 
 
 /*
@@ -62,6 +62,6 @@ int loadMatInit(FILE *cacheStream, network *net, float alpha);
   After the call, cacheStream points to the next signalMatrix->data (if any).
   Die on errors (OOM, cache is broken, read error).
 */
-signalMatrix *loadNextMat(FILE *cacheStream, size_t nbNodes);
+signalMatrix *loadNextMat(gzFile cacheStream, size_t nbNodes);
 
 #endif

@@ -1,4 +1,4 @@
-LDFLAGS = -lm -fopenmp
+LDFLAGS = -lm -lz -fopenmp
 CFLAGS = -g -Wall -Wextra -std=c17 -O2 -fPIC -fvisibility=hidden -fopenmp
 CC = gcc
 

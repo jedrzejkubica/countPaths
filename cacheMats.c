@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <zlib.h>
 
 #include "cacheMats.h"
 #include "network.h"
@@ -26,7 +27,7 @@
 #include "mem.h"
 
 
-/* the cache file will contain in binary form:
+/* the gzipped cache file will contain in binary form:
    CACHE_MAGIC
    CACHE_VERSION
    net->nbNodes
@@ -38,16 +39,16 @@
 #define CACHE_MAGIC "GBA-C"
 #define CACHE_VERSION 1.0
 
-int saveMatInit(FILE *cacheStream, network *net, float alpha) {
+int saveMatInit(gzFile cacheStream, network *net, float alpha) {
     /* use a SIGNALTYPE for VERSION, so we also make sure the SIGNALTYPE representation is the
        same on the running machine and on the machine that built the cache (endianness/format). */
     SIGNALTYPE version = (SIGNALTYPE)CACHE_VERSION;
-    if ((fwrite(CACHE_MAGIC, 1, strlen(CACHE_MAGIC), cacheStream) != strlen(CACHE_MAGIC)) ||
-        (fwrite(&(version), sizeof(version), 1, cacheStream) != 1) ||
-        (fwrite(&(net->nbNodes), sizeof(net->nbNodes), 1, cacheStream) != 1) ||
-        (fwrite(&(net->nbEdges), sizeof(net->nbEdges), 1, cacheStream) != 1) ||
-        (fwrite(net->edges, sizeof(edge), net->nbEdges, cacheStream) != net->nbEdges) ||
-        (fwrite(&(alpha), sizeof(alpha), 1, cacheStream) != 1)) {
+    if ((gzfwrite(CACHE_MAGIC, 1, strlen(CACHE_MAGIC), cacheStream) != strlen(CACHE_MAGIC)) ||
+        (gzfwrite(&(version), sizeof(version), 1, cacheStream) != 1) ||
+        (gzfwrite(&(net->nbNodes), sizeof(net->nbNodes), 1, cacheStream) != 1) ||
+        (gzfwrite(&(net->nbEdges), sizeof(net->nbEdges), 1, cacheStream) != 1) ||
+        (gzfwrite(net->edges, sizeof(edge), net->nbEdges, cacheStream) != net->nbEdges) ||
+        (gzfwrite(&(alpha), sizeof(alpha), 1, cacheStream) != 1)) {
         fprintf(stderr, "ERROR: cannot cache network data, is your partition full?\n");
         return(-1);
     }
@@ -55,9 +56,9 @@ int saveMatInit(FILE *cacheStream, network *net, float alpha) {
 }
 
 
-int saveMat(FILE *cacheStream, signalMatrix *nextMat) {
+int saveMat(gzFile cacheStream, signalMatrix *nextMat) {
     size_t nbElem = nextMat->nbNodes * nextMat->nbNodes;
-    if (fwrite(nextMat->data, sizeof(SIGNALTYPE), nbElem, cacheStream) != nbElem) {
+    if (gzfwrite(nextMat->data, sizeof(SIGNALTYPE), nbElem, cacheStream) != nbElem) {
         fprintf(stderr, "ERROR: cannot save next mat to cachefile, is your partition full?\n");
         return(-1);
     }
@@ -65,22 +66,22 @@ int saveMat(FILE *cacheStream, signalMatrix *nextMat) {
 }
 
 
-int loadMatInit(FILE *cacheStream, network *net, float alpha) {
+int loadMatInit(gzFile cacheStream, network *net, float alpha) {
     // init magic to CACHE_MAGIC so size is correct, we will then squash the content with fread
     char magic[] = CACHE_MAGIC;
-    if ((fread(magic, 1, strlen(CACHE_MAGIC), cacheStream) != strlen(CACHE_MAGIC)) ||
+    if ((gzfread(magic, 1, strlen(CACHE_MAGIC), cacheStream) != strlen(CACHE_MAGIC)) ||
         (memcmp(magic, CACHE_MAGIC, strlen(CACHE_MAGIC)) != 0)) {
         fprintf(stderr, "ERROR: cache magic mismatch, this doesn't look like a GBA cacheFile\n");
         return(-1);
     }
     SIGNALTYPE version;
-    if ((fread(&version, sizeof(SIGNALTYPE), 1, cacheStream) != 1) || (version != (SIGNALTYPE)CACHE_VERSION)) {
+    if ((gzfread(&version, sizeof(SIGNALTYPE), 1, cacheStream) != 1) || (version != (SIGNALTYPE)CACHE_VERSION)) {
         fprintf(stderr, "ERROR: cacheFile version or endianness/format mismatch, make a fresh cache\n");
         return(-1);
     }
     unsigned long int nbNodes, nbEdges;
-    size_t dataRead = fread(&(nbNodes), sizeof(nbNodes), 1, cacheStream);
-    dataRead += fread(&(nbEdges), sizeof(nbEdges), 1, cacheStream);
+    size_t dataRead = gzfread(&(nbNodes), sizeof(nbNodes), 1, cacheStream);
+    dataRead += gzfread(&(nbEdges), sizeof(nbEdges), 1, cacheStream);
     if (dataRead != 2) {
         fprintf(stderr, "ERROR: cannot read header from provided cachefile\n");
         return(-1);
@@ -91,7 +92,7 @@ int loadMatInit(FILE *cacheStream, network *net, float alpha) {
     }
 
     edge *edges = mallocOrDie(nbEdges * sizeof(edge), "E: OOM for temp edges in loadMatInit\n");
-    if (fread(edges, sizeof(edge), nbEdges, cacheStream) != nbEdges) {
+    if (gzfread(edges, sizeof(edge), nbEdges, cacheStream) != nbEdges) {
         fprintf(stderr, "ERROR: cannot read edges from provided cachefile\n");
         free(edges);
         return(-1);
@@ -105,7 +106,7 @@ int loadMatInit(FILE *cacheStream, network *net, float alpha) {
     free(edges);
     
     float alphaFromStream;
-    if ((fread(&(alphaFromStream), sizeof(alphaFromStream), 1, cacheStream) != 1) ||
+    if ((gzfread(&(alphaFromStream), sizeof(alphaFromStream), 1, cacheStream) != 1) ||
         (alphaFromStream != alpha)) {
         fprintf(stderr, "ERROR: provided cachefile alpha can't be read or differs from specified alpha\n");
         return(-1);
@@ -116,19 +117,19 @@ int loadMatInit(FILE *cacheStream, network *net, float alpha) {
 }
 
 
-signalMatrix *loadNextMat(FILE *cacheStream, size_t nbNodes) {
+signalMatrix *loadNextMat(gzFile cacheStream, size_t nbNodes) {
     // is cacheStream empty?
-    int nextC = fgetc(cacheStream);
+    int nextC = gzgetc(cacheStream);
     if (nextC == EOF)
         return(NULL);
     else
-        ungetc(nextC, cacheStream);
+        gzungetc(nextC, cacheStream);
 
     signalMatrix *nextMat = mallocOrDie(sizeof(signalMatrix), "OOM for signalMatrix in loadNextMat\n");
     nextMat->nbNodes = nbNodes;
     size_t nbElem = nbNodes * nbNodes;
     nextMat->data = mallocOrDie(sizeof(SIGNALTYPE) * nbElem, "E: OOM for signalMatrix data\n");
-    if (fread(nextMat->data, sizeof(SIGNALTYPE), nbElem, cacheStream) != nbElem) {
+    if (gzfread(nextMat->data, sizeof(SIGNALTYPE), nbElem, cacheStream) != nbElem) {
         fprintf(stderr, "ERROR: cannot load next mat from cachefile\n");
         exit(1);
     }
