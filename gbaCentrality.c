@@ -83,7 +83,10 @@ void gbaCentrality(network *N, geneScores *causal, float alpha, geneScores *scor
                 fprintf(stderr, "The path must exist, does it? And do you have write permissions there?\n");
                 exit(1);
             }
-            saveMatInit(cacheStream, N, alpha);
+            if (saveMatInit(cacheStream, N, alpha) == -1) {
+                fprintf(stderr, "ERROR: gbaCentrality() called requesting creation of cacheFile but saveMatInit() failed\n");
+                exit(1);
+            }
         }
     }
     
@@ -138,9 +141,13 @@ void gbaCentrality(network *N, geneScores *causal, float alpha, geneScores *scor
         }
 
         // save B_k matrix to cache if requested
-        if (cacheMode == 2)
-            saveMat(cacheStream, sumOfSignal);
-
+        if (cacheMode == 2) {
+            if (saveMat(cacheStream, sumOfSignal) == -1) {
+                fprintf(stderr, "ERROR: gbaCentrality() called requesting creation of cacheFile but saveMat() failed\n");
+                exit(1);
+            }
+        }
+        
         if (cacheMode != 1) {
             // build B_(k+1) for next iteration
             #ifdef DEBUG

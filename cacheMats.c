@@ -39,7 +39,7 @@
 #define CACHE_MAGIC "GBA-C"
 #define CACHE_VERSION 1.0
 
-void saveMatInit(FILE *cacheStream, network *net, float alpha) {
+int saveMatInit(FILE *cacheStream, network *net, float alpha) {
     // we don't yet know how many matrices there will be
     int nbMat = 0;
     /* use a SIGNALTYPE for VERSION, so we also make sure the SIGNALTYPE representation is the
@@ -53,16 +53,17 @@ void saveMatInit(FILE *cacheStream, network *net, float alpha) {
         (fwrite(net->edges, sizeof(edge), net->nbEdges, cacheStream) != net->nbEdges) ||
         (fwrite(&(alpha), sizeof(alpha), 1, cacheStream) != 1)) {
         fprintf(stderr, "ERROR: cannot cache network data, is your partition full?\n");
-        exit(1);
+        return(-1);
     }
+    return(0);
 }
 
 
-void saveMat(FILE *cacheStream, signalMatrix *nextMat) {
+int saveMat(FILE *cacheStream, signalMatrix *nextMat) {
     size_t nbElem = nextMat->nbNodes * nextMat->nbNodes;
     if (fwrite(nextMat->data, sizeof(SIGNALTYPE), nbElem, cacheStream) != nbElem) {
         fprintf(stderr, "ERROR: cannot save next mat to cachefile, is your partition full?\n");
-        exit(1);
+        return(-1);
     }
     // increment nbMat
     long currentPos = ftell(cacheStream);
@@ -73,6 +74,7 @@ void saveMat(FILE *cacheStream, signalMatrix *nextMat) {
     fseek(cacheStream, strlen(CACHE_MAGIC) + sizeof(SIGNALTYPE), SEEK_SET);
     fwrite(&(nbMat), sizeof(nbMat), 1, cacheStream);
     fseek(cacheStream, currentPos, SEEK_SET);
+    return(0);
 }
 
 

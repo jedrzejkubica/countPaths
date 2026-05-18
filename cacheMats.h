@@ -34,17 +34,17 @@
 /*
   Save the provided network data to cacheStream, so we can compare when loading.
   cacheStream must be open for writing.
-  Dies with an error message if something fails.
+  Return 0 if AOK, -1 if something fails (and log an error message on stderr).
 */
-void saveMatInit(FILE *cacheStream, network *net, float alpha);
+int saveMatInit(FILE *cacheStream, network *net, float alpha);
 
 
 /*
   Save nextMat->data to cacheStream.
   cacheStream must be open for writing AND reading.
-  Dies with an error message if something fails.
+  Return 0 if AOK, -1 if something fails (and log an error message on stderr).
 */
-void saveMat(FILE *cacheStream, signalMatrix *nextMat);
+int saveMat(FILE *cacheStream, signalMatrix *nextMat);
 
 
 /*
