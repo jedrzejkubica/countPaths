@@ -62,7 +62,7 @@ typedef struct {
   then increasing source, and any self-interactions must be zero-weight;
   these are true if the network went through checkNetwork()
  */
-compactAdjacencyMatrix *network2compact(network *N, long int nbZeroWeight);
+compactAdjacencyMatrix *network2compact(network *N);
 
 void freeCompactAdjacency(compactAdjacencyMatrix *compactA);
 

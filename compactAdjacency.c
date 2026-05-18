@@ -25,7 +25,18 @@
 #include "mem.h"
 
 
-compactAdjacencyMatrix *network2compact(network *N, long int nbZeroWeight) {
+compactAdjacencyMatrix *network2compact(network *N) {
+    // count number of zero-weight edges in N
+    long int nbZeroWeight = 0;
+    {
+        edge *edgeP = N->edges;
+        for (size_t i = 0; i < N->nbEdges; i++) {
+            if (edgeP->weight == 0)
+                nbZeroWeight++;
+            edgeP++;
+        }
+    }
+
     compactAdjacencyMatrix *compact = mallocOrDie(sizeof(compactAdjacencyMatrix), "E: OOM for compact\n");
 
     compact->nbNodes = N->nbNodes;

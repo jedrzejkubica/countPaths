@@ -111,7 +111,7 @@ void gbaCentrality(network *N, geneScores *causal, float alpha, geneScores *scor
     double normOfMat;
 
     if (cacheMode != 1) {
-        networkComp = network2compact(N, nbZeroWeightEdges);
+        networkComp = network2compact(N);
         // calculate normalization factors (used in each iteration)
         normFactVec = buildNormFactorVector(networkComp, alpha);
     
