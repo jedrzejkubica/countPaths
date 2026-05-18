@@ -59,7 +59,8 @@ int loadMatInit(FILE *cacheStream, network *net, float alpha);
 
 /*
   Return a signalMatrix (allocated here) containing the next matrix stored in cacheStream.
-    After the call, cacheStream points to the next signalMatrix->data (if any).
+  After the call, cacheStream points to the next signalMatrix->data (if any).
+  Die on errors (OOM, cache is broken, read error).
 */
 signalMatrix *loadNextMat(FILE *cacheStream, size_t nbNodes);
 

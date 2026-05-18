@@ -131,10 +131,6 @@ int loadMatInit(FILE *cacheStream, network *net, float alpha) {
 }
 
 
-/*
-  Return a signalMatrix (allocated here) containing the next matrix stored in cacheStream.
-    After the call, cacheStream points to the next signalMatrix->data (if any).
-*/
 signalMatrix *loadNextMat(FILE *cacheStream, size_t nbNodes) {
     signalMatrix *nextMat = mallocOrDie(sizeof(signalMatrix), "OOM for signalMatrix in loadNextMat\n");
     nextMat->nbNodes = nbNodes;
