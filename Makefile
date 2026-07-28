@@ -15,12 +15,12 @@ default: $(OBJDIR) $(DEPDIR) allBins
 all: $(OBJDIR) $(DEPDIR) compile_commands.json allBins
 
 # all binaries
-allBins: testAdjacency gbaCentrality.so
+allBins: testAdjacency bfwalk.so
 
 testAdjacency: $(OBJDIR)/testAdjacency.o $(OBJS)
 	$(CC) $(LDFLAGS) -o $@ $^
 
-gbaCentrality.so: $(OBJS)
+bfwalk.so: $(OBJS)
 	$(CC) $(LDFLAGS) -shared -o $@ $^
 
 
@@ -46,6 +46,6 @@ $(OBJDIR)/%.o: %.c Makefile
 
 
 clean:
-	rm -f $(OBJDIR)/*.o $(DEPDIR)/*.d compile_commands.json testAdjacency gbaCentrality.so
+	rm -f $(OBJDIR)/*.o $(DEPDIR)/*.d compile_commands.json testAdjacency bfwalk.so
 
 .PHONY: default all allBins clean

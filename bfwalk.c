@@ -23,7 +23,7 @@
 #include <omp.h>
 #include <zlib.h>
 
-#include "gbaCentrality.h"
+#include "bfwalk.h"
 #include "network.h"
 #include "cacheMats.h"
 #include "compactAdjacency.h"
@@ -38,18 +38,18 @@
 *********************************************************************/
 static double calculateNorm(signalMatrix *sumOfSignal);
 static void updateScores(geneScores *scores, geneScores *causal, signalMatrix *signalMat);
-static int gbaCentralityFromCache(network *N, geneScores *causal, float alpha, geneScores *scores, char *cacheFile);
-static void gbaCentralityNoCache(network *N, geneScores *causal, float alpha, geneScores *scores, char *cacheFile);
+static int bfwalkFromCache(network *N, geneScores *causal, float alpha, geneScores *scores, char *cacheFile);
+static void bfwalkNoCache(network *N, geneScores *causal, float alpha, geneScores *scores, char *cacheFile);
 
 
 /*********************************************************************
   Define public function
 *********************************************************************/
 
-void gbaCentrality(network *N, geneScores *causal, float alpha, geneScores *scores, char *cacheFile) {
+void bfwalk(network *N, geneScores *causal, float alpha, geneScores *scores, char *cacheFile) {
     // sanity check:
     if (N->nbNodes != causal->nbGenes) {
-        fprintf(stderr, "ERROR: gbaCentrality() called with network and causal genes of different sizes\n");
+        fprintf(stderr, "ERROR: bfwalk() called with network and causal genes of different sizes\n");
         exit(1);
     }
 
@@ -71,7 +71,7 @@ void gbaCentrality(network *N, geneScores *causal, float alpha, geneScores *scor
         if (cacheStream) {
             // cacheFile exists...
             fclose(cacheStream);
-            if (gbaCentralityFromCache(N, causal, alpha, scores, cacheFile))
+            if (bfwalkFromCache(N, causal, alpha, scores, cacheFile))
                 // cacheFile doesn't correspond to N or alpha
                 exit(1);
             // all good, scores filled from cacheFile
@@ -79,8 +79,8 @@ void gbaCentrality(network *N, geneScores *causal, float alpha, geneScores *scor
         }
     }
     if (done == 0)
-        // cacheFile is NULL or doesn't exist, calculate GBA matrices
-        gbaCentralityNoCache(N, causal, alpha, scores, cacheFile);
+        // cacheFile is NULL or doesn't exist, calculate BFWalk matrices
+        bfwalkNoCache(N, causal, alpha, scores, cacheFile);
 }
 
 
@@ -114,21 +114,21 @@ static void updateScores(geneScores *scores, geneScores *causal, signalMatrix *s
 }
 
 /*
-  Fill scores with GBA-centrality, using GBA matrices previously
+  Fill scores with BFWalk, using BFWalk matrices previously
   calculated and stored in cacheFile (must exist).
   Pre-condition: checkNetwork(N) was called beforehand.
   Return 0 if AOK, -1 if cache doesn't correspond to the network N or alpha.
   Die on errors (OOM or cache broken).
 */
-static int gbaCentralityFromCache(network *N, geneScores *causal, float alpha, geneScores *scores, char *cacheFile) {
+static int bfwalkFromCache(network *N, geneScores *causal, float alpha, geneScores *scores, char *cacheFile) {
     size_t nbGenes = causal->nbGenes;
     gzFile cacheStream = gzopen(cacheFile, "r");
     if (cacheStream == NULL) {
-        fprintf(stderr, "ERROR: gbaCentralityFromCache() called but cacheFile can't be gz-opened\n");
+        fprintf(stderr, "ERROR: bfwalkFromCache() called but cacheFile can't be gz-opened\n");
         exit(1);
     }
     if (loadMatInit(cacheStream, N, alpha) == -1) {
-        fprintf(stderr, "ERROR: gbaCentrality() called with mismatched network and cacheFile\n");
+        fprintf(stderr, "ERROR: bfwalk() called with mismatched network and cacheFile\n");
         fprintf(stderr, "provide a non-existing cacheFile to create a cache from the current network\n");
         gzclose(cacheStream);
         return(-1);
@@ -149,30 +149,30 @@ static int gbaCentralityFromCache(network *N, geneScores *causal, float alpha, g
 
 
 /*
-  Fill scores with GBA-centrality, calculating GBA matrices and
+  Fill scores with BFWalk, calculating BFWalk matrices and
   saving them to cacheFile if non-NULL.
   Pre-condition: checkNetwork(N) was called beforehand.
   On errors (eg OOM or issue saving to cacheFile), remove (incomplete)
   cacheFile and exit(1).
 */
-static void gbaCentralityNoCache(network *N, geneScores *causal, float alpha, geneScores *scores, char *cacheFile) {
+static void bfwalkNoCache(network *N, geneScores *causal, float alpha, geneScores *scores, char *cacheFile) {
     size_t nbGenes = causal->nbGenes;
     gzFile cacheStream = NULL;
     if (cacheFile) {
         FILE *fileExists = fopen(cacheFile, "r");
         if (fileExists) {
-            fprintf(stderr, "ERROR: gbaCentralityNoCache() called but cacheFile exists\n");
+            fprintf(stderr, "ERROR: bfwalkNoCache() called but cacheFile exists\n");
             fclose(fileExists);
             exit(1);
         }
         cacheStream = gzopen(cacheFile, "w");
         if (cacheStream == NULL) {
-            fprintf(stderr, "ERROR: gbaCentralityNoCache() called but cacheFile can't be created\n");
+            fprintf(stderr, "ERROR: bfwalkNoCache() called but cacheFile can't be created\n");
             fprintf(stderr, "The path must exist, does it? And do you have write permissions there?\n");
             exit(1);
         }
         if (saveMatInit(cacheStream, N, alpha) == -1) {
-            fprintf(stderr, "ERROR: gbaCentralityNoCache() called to build cacheFile but saveMatInit() failed\n");
+            fprintf(stderr, "ERROR: bfwalkNoCache() called to build cacheFile but saveMatInit() failed\n");
             gzclose(cacheStream);
             remove(cacheFile);
             exit(1);
@@ -191,7 +191,7 @@ static void gbaCentralityNoCache(network *N, geneScores *causal, float alpha, ge
     normFactorVector *normFactVec = buildNormFactorVector(networkComp, alpha);
     
     #ifdef DEBUG
-    fprintf(stderr, "INFO gbaCentrality(): calculating M~_%ld\n", k);
+    fprintf(stderr, "INFO bfwalk(): calculating M~_%ld\n", k);
     #endif
     signalWithPredMatrix *signalCurrent = buildFirstSignal(networkComp, normFactVec);
     signalMatrix *sumOfSignal = signalSum(signalCurrent, networkComp);
@@ -201,7 +201,7 @@ static void gbaCentralityNoCache(network *N, geneScores *causal, float alpha, ge
         updateScores(scores, causal, sumOfSignal);
         // save M~_k matrix to cache if requested
         if ((cacheStream) && (saveMat(cacheStream, sumOfSignal) == -1)) {
-            fprintf(stderr, "ERROR: gbaCentrality() called to build cacheFile but saveMat() failed\n");
+            fprintf(stderr, "ERROR: bfwalk() called to build cacheFile but saveMat() failed\n");
             gzclose(cacheStream);
             remove(cacheFile);
             exit(1);
@@ -209,7 +209,7 @@ static void gbaCentralityNoCache(network *N, geneScores *causal, float alpha, ge
         
         // build M~_(k+1) for next iteration
         #ifdef DEBUG
-        fprintf(stderr, "INFO gbaCentrality(): calculating M~_%ld\n", k+1);
+        fprintf(stderr, "INFO bfwalk(): calculating M~_%ld\n", k+1);
         #endif
         signalWithPredMatrix *signalNext = buildNextSignal(signalCurrent, sumOfSignal, networkComp, normFactVec);
         freeSignalWithPred(signalCurrent);

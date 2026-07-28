@@ -27,7 +27,7 @@
 
 /* Save or load signalMatrix matrices to/from a cachefile.
    These matrices depend only on the network and on alpha, not on the seeds (causal);
-   and calculating them is the bottleneck in GBA-centrality, therefore caching them
+   and calculating them is the bottleneck in BFWalk, therefore caching them
    can greatly speed things up.
 */
 

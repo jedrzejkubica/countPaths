@@ -36,7 +36,7 @@
    alpha
    each of the nbMat signalMatrix->data
 */
-#define CACHE_MAGIC "GBA-C"
+#define CACHE_MAGIC "BFWALK-C"
 #define CACHE_VERSION 1.0
 
 int saveMatInit(gzFile cacheStream, network *net, float alpha) {
@@ -71,7 +71,7 @@ int loadMatInit(gzFile cacheStream, network *net, float alpha) {
     char magic[] = CACHE_MAGIC;
     if ((gzfread(magic, 1, strlen(CACHE_MAGIC), cacheStream) != strlen(CACHE_MAGIC)) ||
         (memcmp(magic, CACHE_MAGIC, strlen(CACHE_MAGIC)) != 0)) {
-        fprintf(stderr, "ERROR: cache magic mismatch, this doesn't look like a GBA cacheFile\n");
+        fprintf(stderr, "ERROR: cache magic mismatch, this doesn't look like a BFWalk cacheFile\n");
         return(-1);
     }
     SIGNALTYPE version;

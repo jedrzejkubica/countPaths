@@ -2,5 +2,5 @@
 *.o
 compile_commands.json
 testAdjacency
-gbaCentrality.so
+bfwalk.so
 TAGS

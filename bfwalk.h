@@ -16,8 +16,8 @@
   If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef _GBACENTRALITY_H_
-#define _GBACENTRALITY_H_
+#ifndef _BFWALK_H_
+#define _BFWALK_H_
 
 #include "network.h"
 #include "scores.h"
@@ -26,25 +26,25 @@
 // #define DEBUG
 
 /*
-  gbaCentrality() is the only symbol we want to export in the shared library
+  bfwalk() is the only symbol we want to export in the shared library
   -> we will compile with -fvisibility=hidden and change to "default" here
 */
 #pragma GCC visibility push(default)
 
 /*
     Given a network N and some seed nodes (eg known causal genes),
-    apply the GBA-centrality algorithm to calculate a score for each node in
+    apply the BFWalk algorithm to calculate a score for each node in
     the network.
     In "causal", each score must be in [0,1] and most should be 0.
-    "alpha" is the GBA-centrality parameter, it must be in ]0,1[, typically 0.5 is good.
+    "alpha" is the BFWalk parameter, it must be in ]0,1[, typically 0.5 is good.
     "scores" must be allocated and will be filled in-place.
     If cacheFile is NULL it is ignored, otherwise it should be a filename (with path,
     path must exist):
     - if cacheFile doesn't exist it will be created and populated with data that depends
       only on N and alpha;
     - if it exists, it's content MUST match N and alpha (otherwise we log & exit),
-      and it will greatly speed up gbaCentrality().
+      and it will greatly speed up bfwalk().
 */
-void gbaCentrality(network *N, geneScores *causal, float alpha, geneScores *scores, char *cacheFile);
+void bfwalk(network *N, geneScores *causal, float alpha, geneScores *scores, char *cacheFile);
 
 #endif
