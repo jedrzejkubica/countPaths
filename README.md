@@ -26,5 +26,5 @@ BFWalk-C can be used stand-alone by calling the `bfwalk()` function in the share
 
 ## Dependencies
 
-- None for production
-- For development you can install "bear", which allows to build a compilation database for LSP (usable by emacs and other IDEs). Then call `make all` instead of `make`
+- zlib, openmp (libraries for running, and header files for building -- the headers are often available in separate -devel packages, eg zlib-devel on RHEL9)
+- For development you can also install "bear", which allows to build a compilation database for LSP (usable by emacs and other IDEs). Then call `make all` instead of `make`
